@@ -11,6 +11,8 @@ export default async function handler(req, res) {
     db.dms = db.dms || {};
     db.notifications = db.notifications || {};
     db.groups = db.groups || [];
+    db.leads = db.leads || [];
+    db.subscribers = db.subscribers || [];
     const me = db.users[email];
     if (!me) return send(res, 401, { error: "Sesión no válida." });
     const isAdmin = !!me.isAdmin || isOwner(email);
@@ -83,6 +85,8 @@ export default async function handler(req, res) {
         perks: db.perks || [],
         resources: db.resources || [],
         members,
+        leads: isAdmin ? db.leads : [],
+        subscribers: isAdmin ? db.subscribers : [],
         myGroup,
         groups,
         myDms,
@@ -212,6 +216,9 @@ export default async function handler(req, res) {
         await writeDB(db); return send(res, 200, { ok: true, id: grp.id });
       }
       case "deleteGroup": { if (!needAdmin()) return; db.groups = (db.groups || []).filter((x) => x.id !== body.id); await writeDB(db); return send(res, 200, { ok: true }); }
+      /* ----- admin: captación web (leads + suscriptores) ----- */
+      case "deleteLead": { if (!needAdmin()) return; db.leads = (db.leads || []).filter((x) => x.id !== body.id); await writeDB(db); return send(res, 200, { ok: true }); }
+      case "deleteSubscriber": { if (!needAdmin()) return; db.subscribers = (db.subscribers || []).filter((x) => x.email !== body.email); await writeDB(db); return send(res, 200, { ok: true }); }
       /* ----- mensajes directos (DMs) ----- */
       case "sendDM": {
         const text = String(body.text || "").trim().slice(0, 2000);

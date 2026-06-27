@@ -31,6 +31,11 @@
 
     async listGroups() { return window.EthData.groups(); },
     async saveGroup(item) { return after(await post("saveGroup", { item })); },
-    async deleteGroup(id) { return after(await post("deleteGroup", { id })); }
+    async deleteGroup(id) { return after(await post("deleteGroup", { id })); },
+
+    async listLeads() { return window.EthData.leads(); },
+    async deleteLead(id) { return after(await post("deleteLead", { id })); },
+    async listSubscribers() { return window.EthData.subscribers(); },
+    async deleteSubscriber(email) { return after(await post("deleteSubscriber", { email })); }
   };
 })();

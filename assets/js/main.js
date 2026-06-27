@@ -138,6 +138,38 @@
     }, { passive: true });
   }
 
+  /* Newsletter (.news) → backend real (api/public) */
+  document.querySelectorAll("form.news").forEach((f) => {
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = f.querySelector('input[type="email"]');
+      const email = ((input && input.value) || "").trim();
+      if (!email) return;
+      const btn = f.querySelector("button"); if (btn) btn.disabled = true;
+      try {
+        const r = await fetch("/api/public?action=subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+        f.innerHTML = `<p style="font-family:var(--font-display); font-weight:600; color:${r.ok ? "var(--lime-deep)" : "var(--coral)"}; padding:6px 0">${r.ok ? "✅ ¡Suscrito! Te escribiremos pronto." : "Hubo un problema, intenta de nuevo."}</p>`;
+      } catch (err) { if (btn) btn.disabled = false; }
+    });
+  });
+
+  /* Formulario de aplicación (contacto) → backend real → panel admin */
+  const applyForm = document.getElementById("applyForm");
+  if (applyForm) {
+    applyForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const g = (n) => { const el = applyForm.querySelector(`[name="${n}"]`); return el ? el.value.trim() : ""; };
+      if (g("_honey")) return; // honeypot anti-spam
+      const payload = { name: g("Nombre"), email: g("Email"), company: g("Empresa"), role: g("Rol"), plan: g("Plan de interés"), link: g("Web/LinkedIn"), msg: g("Mensaje") };
+      const btn = applyForm.querySelector('button[type="submit"]'); if (btn) { btn.disabled = true; btn.textContent = "Enviando…"; }
+      try {
+        const r = await fetch("/api/public?action=apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        if (!r.ok) throw new Error();
+        applyForm.innerHTML = '<div style="text-align:center; padding:34px 10px"><div style="font-size:46px">✅</div><h3 style="margin:12px 0 6px">¡Solicitud enviada!</h3><p class="muted">Revisamos cada solicitud con atención y te respondemos en 48–72h. Gracias por tu interés en Ethos LATAM.</p></div>';
+      } catch (err) { if (btn) { btn.disabled = false; btn.textContent = "Enviar solicitud"; } alert("No se pudo enviar. Inténtalo de nuevo o escríbenos a hola@ethoslatam.com"); }
+    });
+  }
+
   /* Scroll progress bar */
   const prog = document.createElement("div");
   prog.className = "scroll-prog";

@@ -68,12 +68,8 @@
           <h2 style="font-size:clamp(1.6rem,3vw,2.2rem); margin-bottom:8px">Solicitud de ingreso</h2>
           <p class="muted" style="margin-bottom:28px">Tarda menos de 2 minutos. Te respondemos en 48-72h.</p>
 
-          <!-- IMPORTANTE: cambia el email de la action por el tuyo (FormSubmit) -->
-          <form action="https://formsubmit.co/REEMPLAZAR@TU-EMAIL.com" method="POST">
-            <input type="hidden" name="_subject" value="Nueva solicitud de ingreso — Ethos LATAM">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="_template" value="table">
-            <input type="text" name="_honey" style="display:none">
+          <form id="applyForm">
+            <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
 
             <div class="field-row">
               <div class="field"><label for="nombre">Nombre completo *</label><input id="nombre" type="text" name="Nombre" placeholder="Tu nombre" required></div>
@@ -115,7 +111,7 @@
 
         <!-- Aside contacto -->
         <aside class="reveal d1" style="display:grid; gap:20px">
-          <div class="media-frame" style="aspect-ratio:16/10"><img src="assets/img/emotion-connection.webp" alt="Founders de Ethos LATAM sellando un acuerdo" loading="lazy" style="object-position:center 60%"></div>
+          <div class="media-frame" style="aspect-ratio:16/10"><img src="assets/img/emotion-connection.webp" alt="Founders de Ethos LATAM sellando un acuerdo" loading="lazy" style="object-position:center 60%" decoding="async"></div>
           <div class="card">
             <h3 style="margin-bottom:14px">Habla con nosotros</h3>
             <div class="feature-list">
@@ -137,9 +133,7 @@
           <div class="card v">
             <h3 style="margin-bottom:10px">¿Aún no estás listo para aplicar?</h3>
             <p class="muted" style="margin-bottom:18px">Suscríbete a la newsletter y recibe ideas de negocio, salud y rendimiento cada semana.</p>
-            <form class="news" action="https://formsubmit.co/REEMPLAZAR@TU-EMAIL.com" method="POST">
-              <input type="hidden" name="_subject" value="Nueva suscripción a la newsletter — Ethos LATAM">
-              <input type="hidden" name="_captcha" value="false">
+            <form class="news" action="#" method="POST">
               <input type="email" name="email" placeholder="tu@email.com" required aria-label="Email">
               <button type="submit" class="btn btn-violet">Suscribirme</button>
             </form>

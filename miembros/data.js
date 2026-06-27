@@ -63,6 +63,10 @@
       return d;
     },
 
+    /* ----- captación web (admin) ----- */
+    async leads() { return (await ensure()).leads || []; },
+    async subscribers() { return (await ensure()).subscribers || []; },
+
     /* ----- core groups ----- */
     async myGroup() { return (await ensure()).myGroup || null; },
     async groups() { return (await ensure()).groups || []; },
