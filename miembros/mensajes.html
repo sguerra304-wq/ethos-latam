@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Mensajes — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <h1 class="page-title">Mensajes</h1>
+      <p class="page-sub">Conversaciones privadas con la comunidad. Empieza una desde el directorio.</p>
+      <div class="dm-wrap" id="dmWrap">
+        <aside class="dm-list" id="dmList"></aside>
+        <section class="dm-thread" id="dmThread"></section>
+      </div>
+    </main>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("mensajes");
+      if (!user) return;
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      const rel = (ts) => { if (!ts) return ""; const s = Math.floor((Date.now() - ts) / 1000); if (s < 60) return "ahora"; if (s < 3600) return Math.floor(s / 60) + "m"; if (s < 86400) return Math.floor(s / 3600) + "h"; return Math.floor(s / 86400) + "d"; };
+      const clock = (ts) => { const d = new Date(ts); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); };
+
+      const members = await EthData.members();
+      const memByUid = {}; members.forEach((m) => (memByUid[m.uid] = m));
+      const wrap = $("dmWrap"), listEl = $("dmList"), threadEl = $("dmThread");
+
+      const params = new URLSearchParams(location.search);
+      let activeUid = params.get("u") || null;
+      let convos = [];
+
+      function getConvo(uid) {
+        let c = convos.find((x) => x.uid === uid);
+        if (!c) { const m = memByUid[uid]; if (!m) return null; c = { uid, name: m.name, initials: m.initials, role: m.role || "", company: m.company || "", lastSeen: m.lastSeen || 0, messages: [], unread: 0, lastTs: 0, lastText: "" }; }
+        return c;
+      }
+
+      function renderList() {
+        let rows = convos.slice();
+        if (activeUid && !rows.find((r) => r.uid === activeUid)) { const c = getConvo(activeUid); if (c) rows.unshift(c); }
+        if (!rows.length) { listEl.innerHTML = '<div class="dm-empty">Aún no tienes conversaciones.<br>Empieza una desde el <a href="directorio.html" style="color:var(--violet)">Directorio</a>.</div>'; return; }
+        listEl.innerHTML = rows.map((c) => `
+          <div class="dm-conv ${c.uid === activeUid ? "on" : ""}" data-uid="${c.uid}">
+            <span class="av">${esc(c.initials || "?")}</span>
+            <div class="ci"><b>${esc(c.name)} ${c.unread ? `<span class="un">${c.unread}</span>` : ""}</b>
+              <div class="dm-last">${esc(c.lastText || "Escribe el primer mensaje…")}</div></div>
+            <time>${rel(c.lastTs)}</time>
+          </div>`).join("");
+      }
+
+      function renderThread() {
+        const c = activeUid ? getConvo(activeUid) : null;
+        if (!c) { threadEl.innerHTML = '<div class="dm-empty">Elige una conversación o empieza una desde el Directorio.</div>'; wrap.classList.remove("viewing"); return; }
+        wrap.classList.add("viewing");
+        threadEl.innerHTML = `
+          <div class="dm-thead"><button class="back" id="dmBack" aria-label="Volver">‹</button>
+            <span class="av${EthShell.presence(c.lastSeen).online ? " on" : ""}">${esc(c.initials || "?")}</span>
+            <div><b>${esc(c.name)}</b><span>${(() => { const pr = EthShell.presence(c.lastSeen); return pr.label ? `<i class="pres-dot ${pr.online ? "on" : ""}"></i>${esc(pr.label)}` : esc([c.role, c.company].filter(Boolean).join(" · ") || "Miembro"); })()}</span></div></div>
+          <div class="dm-msgs" id="dmMsgs">${c.messages.length
+            ? c.messages.map((m) => `<div class="bubble ${m.mine ? "me" : "them"}">${esc(m.text)}<time>${clock(m.ts)}</time></div>`).join("")
+            : '<div class="dm-empty">Sin mensajes todavía. ¡Saluda! 👋</div>'}</div>
+          <form class="dm-compose" id="dmForm"><input id="dmInput" placeholder="Escribe un mensaje…" autocomplete="off"><button class="btn btn-primary" type="submit">Enviar</button></form>`;
+        const msgs = $("dmMsgs"); if (msgs) msgs.scrollTop = msgs.scrollHeight;
+        $("dmBack").onclick = () => { activeUid = null; history.replaceState(null, "", "mensajes.html"); renderList(); renderThread(); };
+        $("dmForm").onsubmit = async (e) => {
+          e.preventDefault();
+          const inp = $("dmInput"); const t = inp.value.trim(); if (!t) return; inp.value = "";
+          const r = await EthData.sendDM(activeUid, t);
+          if (r && r.message) { c.messages.push(r.message); c.lastText = t; c.lastTs = r.message.ts; renderThread(); }
+          else EthShell.toast("No se pudo enviar el mensaje.");
+          reload(false);
+        };
+      }
+
+      async function openConvo(uid) {
+        activeUid = uid; history.replaceState(null, "", "mensajes.html?u=" + uid);
+        renderList(); renderThread();
+        try { await EthData.readDM(uid); } catch (e) {}
+      }
+      listEl.addEventListener("click", (e) => { const c = e.target.closest("[data-uid]"); if (c) openConvo(c.dataset.uid); });
+
+      async function reload(refresh) {
+        if (refresh !== false) await EthData.refresh();
+        const inp = $("dmInput"); const val = inp ? inp.value : ""; const foc = inp && document.activeElement === inp;
+        convos = await EthData.myDms();
+        renderList();
+        if (activeUid) { renderThread(); const ni = $("dmInput"); if (ni) { ni.value = val; if (foc) ni.focus(); } }
+      }
+
+      // inicial
+      convos = await EthData.myDms();
+      if (!activeUid && convos.length) activeUid = convos[0].uid;
+      renderList(); renderThread();
+      if (activeUid) { try { await EthData.readDM(activeUid); } catch (e) {} }
+
+      // sincronización en vivo (cada 8s)
+      setInterval(() => { reload(true).catch(() => {}); }, 8000);
+    })();
+  </script>
+</body>
+</html>

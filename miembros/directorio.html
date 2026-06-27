@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Directorio — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <h1 class="page-title">Directorio de miembros</h1>
+      <p class="page-sub" id="sub">Conecta con founders, CEOs e inversionistas de la comunidad.</p>
+
+      <div class="dir-toolbar">
+        <input type="search" id="q" placeholder="Buscar por nombre, empresa o lo que ofrece/busca…">
+        <select id="fsec"><option value="">Todos los sectores</option></select>
+        <select id="fcity"><option value="">Todas las ciudades</option></select>
+        <select id="foa"><option value="">Ofrece / Busca</option><option value="offers">💡 Ofrecen ayuda</option><option value="asks">🙋 Buscan ayuda</option></select>
+      </div>
+
+      <div class="dir-grid" id="grid"></div>
+    </main>
+  </div>
+
+  <div class="modal" id="modal"><div class="modal-card"><div id="modalBody"></div></div></div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("directorio");
+      if (!user) return;
+      localStorage.setItem("eth_seen_dir", "1");
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      const members = await EthData.members();
+      const byId = {}; members.forEach((m) => (byId[m.uid] = m));
+      document.getElementById("sub").textContent = members.length + " miembros activos · conecta y pide intros.";
+
+      const fsec = document.getElementById("fsec"), fcity = document.getElementById("fcity"), foa = document.getElementById("foa");
+      [...new Set(members.map((m) => m.sector).filter(Boolean))].sort().forEach((s) => { const o = document.createElement("option"); o.textContent = s; fsec.appendChild(o); });
+      [...new Set(members.map((m) => m.city).filter(Boolean))].sort().forEach((c) => { const o = document.createElement("option"); o.textContent = c; fcity.appendChild(o); });
+
+      const q = document.getElementById("q"), grid = document.getElementById("grid");
+      function render() {
+        const term = q.value.toLowerCase(), se = fsec.value, ci = fcity.value, oa = foa.value;
+        const rows = members.filter((m) =>
+          (!se || m.sector === se) && (!ci || m.city === ci) &&
+          (!oa || (oa === "offers" ? m.offers : m.asks)) &&
+          (!term || (m.name + " " + (m.company || "") + " " + (m.role || "") + " " + (m.offers || "") + " " + (m.asks || "")).toLowerCase().includes(term))
+        );
+        grid.innerHTML = rows.length ? rows.map((m) => `
+          <div class="mcard" data-open="${m.uid}">
+            <div class="top"><span class="av${EthShell.presence(m.lastSeen).online ? " on" : ""}">${esc(m.initials || "?")}</span><div><b>${esc(m.name)}</b><div class="rc">${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</div>${(() => { const pr = EthShell.presence(m.lastSeen); return pr.label ? `<div class="pres ${pr.online ? "on" : ""}">${pr.label}</div>` : ""; })()}</div></div>
+            <p class="bio">${esc(m.bio || "")}</p>
+            <div class="tags"><span class="tag violet">${esc(m.sector || "—")}</span><span class="tag">${esc([m.city, m.country].filter(Boolean).join(", ") || "—")}</span><span class="tag lime">${esc(m.plan || "Pro")}</span></div>
+            ${(m.offers || m.asks) ? `<div class="oa">${m.offers ? `<div class="oa-row"><span class="oa-tag offer">Ofrece</span><span>${esc(m.offers)}</span></div>` : ""}${m.asks ? `<div class="oa-row"><span class="oa-tag ask">Busca</span><span>${esc(m.asks)}</span></div>` : ""}</div>` : ""}
+            <a class="btn-intro" href="mensajes.html?u=${esc(m.uid)}">Enviar mensaje</a>
+          </div>`).join("") : '<p class="muted">No se encontraron miembros con esos filtros.</p>';
+      }
+      [q, fsec, fcity, foa].forEach((el) => el.addEventListener("input", render));
+      render();
+
+      const modal = document.getElementById("modal"), body = document.getElementById("modalBody");
+      const closeModal = () => modal.classList.remove("on");
+      modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+      function socialUrl(kind, v) {
+        if (!v) return "";
+        v = v.trim();
+        if (/^https?:\/\//i.test(v)) return v;
+        if (kind === "ig") return "https://instagram.com/" + v.replace(/^@/, "");
+        if (kind === "in") return "https://linkedin.com/in/" + v.replace(/^@/, "");
+        return v;
+      }
+      function socials(m) {
+        const items = [];
+        if (m.linkedin) items.push(`<a class="btn-xs" target="_blank" rel="noopener" href="${esc(socialUrl("in", m.linkedin))}">in · LinkedIn</a>`);
+        if (m.instagram) items.push(`<a class="btn-xs" target="_blank" rel="noopener" href="${esc(socialUrl("ig", m.instagram))}">◎ Instagram</a>`);
+        return items.length ? `<div class="ra" style="margin-top:14px">${items.join("")}</div>` : "";
+      }
+      function openMember(m) {
+        body.innerHTML = `<div class="member-detail">
+            <div class="top"><span class="av${EthShell.presence(m.lastSeen).online ? " on" : ""}">${esc(m.initials || "?")}</span><div><h3 style="margin:0">${esc(m.name)}</h3><div class="rc muted">${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</div>${(() => { const pr = EthShell.presence(m.lastSeen); return pr.label ? `<div class="pres ${pr.online ? "on" : ""}">${pr.label}</div>` : ""; })()}</div></div>
+            <div class="tags"><span class="tag violet">${esc(m.sector || "—")}</span><span class="tag">${esc([m.city, m.country].filter(Boolean).join(", ") || "—")}</span><span class="tag lime">Plan ${esc(m.plan || "Pro")}</span></div>
+            <p class="bio">${esc(m.bio || "Sin bio todavía.")}</p>
+            ${(m.offers || m.asks) ? `<div class="oa" style="margin:14px 0">${m.offers ? `<div class="oa-row"><span class="oa-tag offer">💡 Ofrece</span><span>${esc(m.offers)}</span></div>` : ""}${m.asks ? `<div class="oa-row"><span class="oa-tag ask">🙋 Busca</span><span>${esc(m.asks)}</span></div>` : ""}</div>` : ""}
+            ${socials(m)}
+            <div class="modal-actions" style="margin-top:22px">
+              <button class="btn btn-ghost" data-close>Cerrar</button>
+              <a class="btn btn-primary" href="mensajes.html?u=${esc(m.uid)}">Enviar mensaje</a>
+            </div>
+          </div>`;
+        modal.classList.add("on");
+      }
+
+      grid.addEventListener("click", (ev) => {
+        if (ev.target.closest(".btn-intro")) { ev.stopPropagation(); return; } // enlace a Mensajes
+        const card = ev.target.closest("[data-open]");
+        if (card) openMember(byId[card.dataset.open]);
+      });
+      body.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) closeModal(); });
+    })();
+  </script>
+</body>
+</html>

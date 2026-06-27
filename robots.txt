@@ -1,0 +1,88 @@
+# Ethos LATAM — robots.txt
+# Web pública indexable; área de miembros y API excluidas.
+
+User-agent: *
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+# ---- Motores de búsqueda con IA / generativos (GEO) ----
+# Se permite la web pública (marketing); se bloquea el área privada y la API.
+
+User-agent: GPTBot
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: Amazonbot
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: Meta-ExternalAgent
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: CCBot
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: cohere-ai
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+# Guía para LLMs: https://ethoslatam.com/llms.txt
+Sitemap: https://ethoslatam.com/sitemap.xml

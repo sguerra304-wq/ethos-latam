@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Recursos — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <h1 class="page-title">Biblioteca de recursos</h1>
+      <p class="page-sub">Plantillas, guías y workshops solo para miembros.</p>
+
+      <div class="dir-toolbar">
+        <input type="search" id="q" placeholder="Buscar recurso…">
+        <select id="fcat"><option value="">Todas las categorías</option></select>
+        <select id="ffav"><option value="">Todos</option><option value="1">★ Guardados</option></select>
+      </div>
+
+      <div class="res-grid" id="grid"></div>
+    </main>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("recursos");
+      if (!user) return;
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      const res = await EthData.resources();
+      let favs = JSON.parse(localStorage.getItem("eth_favs") || "[]");
+      const saveFavs = () => localStorage.setItem("eth_favs", JSON.stringify(favs));
+
+      const fcat = document.getElementById("fcat"), ffav = document.getElementById("ffav");
+      [...new Set(res.map((r) => r.cat))].sort().forEach((c) => { const o = document.createElement("option"); o.textContent = c; fcat.appendChild(o); });
+
+      const q = document.getElementById("q"), grid = document.getElementById("grid");
+      const star = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6.5 7 .6-5.3 4.6 1.6 6.9L12 17.8 5.7 20.6l1.6-6.9L2 9.1l7-.6L12 2z" stroke-linejoin="round"/></svg>';
+      function render() {
+        const term = q.value.toLowerCase(), ca = fcat.value, onlyFav = ffav.value === "1";
+        const rows = res.filter((r) =>
+          (!ca || r.cat === ca) && (!onlyFav || favs.includes(r.id)) &&
+          (!term || (r.title + " " + (r.desc || "")).toLowerCase().includes(term)));
+        grid.innerHTML = rows.length ? rows.map((r) => `
+          <div class="rcard">
+            <div class="rtop"><div class="cat">${esc(r.cat)} · ${esc(r.type)}</div>
+              <button class="fav-btn ${favs.includes(r.id) ? "on" : ""}" data-fav="${r.id}" title="Guardar">${star}</button></div>
+            <h4>${esc(r.title)}</h4>
+            <p>${esc(r.desc || "")}</p>
+            <button class="btn btn-ghost" data-t="${esc(r.title)}">Abrir recurso</button>
+          </div>`).join("") : '<p class="muted">No hay recursos para esa búsqueda.</p>';
+      }
+      [q, fcat, ffav].forEach((el) => el.addEventListener("input", render));
+      render();
+
+      grid.addEventListener("click", (ev) => {
+        const fav = ev.target.closest("[data-fav]");
+        if (fav) {
+          const id = fav.dataset.fav;
+          if (favs.includes(id)) { favs = favs.filter((x) => x !== id); EthShell.toast("Quitado de guardados"); }
+          else { favs.push(id); EthShell.toast("Guardado en tu biblioteca ★"); }
+          saveFavs(); render(); return;
+        }
+        const b = ev.target.closest("[data-t]");
+        if (b) EthShell.toast("Abriendo: " + b.dataset.t);
+      });
+    })();
+  </script>
+</body>
+</html>

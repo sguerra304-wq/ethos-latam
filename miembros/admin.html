@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Admin — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <div class="admin-head">
+        <h1 class="page-title" style="margin:0">Panel de administración</h1>
+        <span class="admin-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 4-3 7-8 8-5-1-8-4-8-8V6l8-4z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg> Solo administrador</span>
+      </div>
+      <p class="page-sub">Gestiona la comunidad y el contenido de la plataforma: solicitudes, eventos, recursos, beneficios, miembros y ajustes de la web.</p>
+
+      <div class="admin-tabs">
+        <button data-tab="overview" class="on">Resumen</button>
+        <button data-tab="apps">Solicitudes <span id="appsCount"></span></button>
+        <button data-tab="events">Eventos</button>
+        <button data-tab="resources">Recursos</button>
+        <button data-tab="perks">Beneficios</button>
+        <button data-tab="members">Miembros</button>
+        <button data-tab="groups">Grupos</button>
+        <button data-tab="settings">Ajustes</button>
+      </div>
+
+      <section class="admin-sec on" id="sec-overview">
+        <div class="ov-grid" id="ovGrid"></div>
+        <div class="panel">
+          <h3 style="margin-bottom:14px">Acciones rápidas</h3>
+          <div class="ov-actions">
+            <button data-go="apps">📥 Revisar solicitudes</button>
+            <button data-go="events">📅 Crear evento</button>
+            <button data-go="perks">🎁 Añadir beneficio</button>
+            <button data-go="resources">📚 Subir recurso</button>
+            <button data-go="settings">⚙️ Editar anuncio</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-sec" id="sec-apps">
+        <div class="sec-head"><h3>Solicitudes de ingreso</h3></div>
+        <div id="appsList"></div>
+      </section>
+
+      <section class="admin-sec" id="sec-events">
+        <div class="sec-head"><h3>Eventos</h3><button class="btn btn-primary" id="newEvent">+ Nuevo evento</button></div>
+        <div id="eventsList"></div>
+      </section>
+
+      <section class="admin-sec" id="sec-resources">
+        <div class="sec-head"><h3>Recursos</h3><button class="btn btn-primary" id="newResource">+ Nuevo recurso</button></div>
+        <div id="resourcesList"></div>
+      </section>
+
+      <section class="admin-sec" id="sec-perks">
+        <div class="sec-head"><h3>Beneficios</h3><button class="btn btn-primary" id="newPerk">+ Nuevo beneficio</button></div>
+        <div id="perksList"></div>
+      </section>
+
+      <section class="admin-sec" id="sec-members">
+        <div class="sec-head"><h3>Miembros</h3></div>
+        <div id="membersList"></div>
+      </section>
+
+      <section class="admin-sec" id="sec-groups">
+        <div class="sec-head"><h3>Core Groups · masterminds</h3><button class="btn btn-primary" id="newGroup">+ Nuevo grupo</button></div>
+        <p class="page-sub" style="margin-bottom:18px">Grupos reducidos y recurrentes (8–10 founders) que se acompañan en el tiempo. Cada miembro ve su grupo en "Mi grupo".</p>
+        <div id="groupsList"></div>
+      </section>
+
+      <section class="admin-sec" id="sec-settings">
+        <div class="sec-head"><h3>Ajustes de la web</h3></div>
+        <div class="panel">
+          <div class="field">
+            <label for="announcement">Anuncio para la comunidad</label>
+            <textarea id="announcement" placeholder="Ej: ¡Plazas abiertas para el Ethos Summit! Reserva la tuya."></textarea>
+            <p class="muted" style="font-size:13px; margin-top:8px">Se muestra como banner destacado en el inicio del área de miembros. Déjalo vacío para ocultarlo.</p>
+          </div>
+          <button class="btn btn-primary btn-lg" id="saveSettings">Guardar ajustes</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <h3 id="modalTitle">Editar</h3>
+      <form id="modalForm"></form>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="admin.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("admin");
+      if (!user) return;
+      if (!user.isAdmin) { location.replace("index.html"); return; }
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+
+      /* tabs + navegación rápida */
+      function switchTab(key) {
+        document.querySelectorAll(".admin-tabs button").forEach((x) => x.classList.toggle("on", x.dataset.tab === key));
+        document.querySelectorAll(".admin-sec").forEach((s) => s.classList.toggle("on", s.id === "sec-" + key));
+      }
+      document.querySelectorAll(".admin-tabs button").forEach((b) => { b.onclick = () => switchTab(b.dataset.tab); });
+      document.querySelectorAll("[data-go]").forEach((b) => { b.onclick = () => switchTab(b.dataset.go); });
+
+      /* resumen */
+      async function renderOverview() {
+        const [members, apps, events, posts, perks] = await Promise.all([EthData.members(), EthData.applications(), EthData.events(), EthData.posts(), EthData.perks()]);
+        const cards = [
+          { n: apps.length, l: "Solicitudes pendientes", alert: apps.length > 0 },
+          { n: members.length, l: "Miembros activos" },
+          { n: events.length, l: "Eventos" },
+          { n: posts.length, l: "Publicaciones" },
+          { n: perks.length, l: "Beneficios" }
+        ];
+        $("ovGrid").innerHTML = cards.map((c) => `<div class="ov-card ${c.alert ? "alert" : ""}"><div class="n">${c.n}</div><div class="l">${c.l}</div></div>`).join("");
+      }
+
+      /* ajustes */
+      async function renderSettings() {
+        const s = await EthData.settings();
+        $("announcement").value = (s && s.announcement) || "";
+      }
+      $("saveSettings").onclick = async () => {
+        const r = await EthData.saveSettings({ announcement: $("announcement").value.trim() });
+        EthShell.toast(r.ok ? "Ajustes guardados ✦ Visible en el inicio de los miembros" : "No se pudo guardar");
+      };
+
+      /* ---------- Solicitudes ---------- */
+      async function renderApps() {
+        const apps = await EthAdmin.listApplications();
+        const pending = apps.filter((a) => a.status === "pending").length;
+        $("appsCount").textContent = pending ? "(" + pending + ")" : "";
+        $("appsList").innerHTML = apps.length ? apps.map((a) => `
+          <div class="admin-row">
+            <div class="ri">
+              <h4>${esc(a.name)} <span class="status-tag ${a.status}">${a.status === "pending" ? "Pendiente" : a.status === "approved" ? "Aprobada" : "Rechazada"}</span></h4>
+              <div class="meta"><span>${esc(a.role || "")}${a.company ? " · " + esc(a.company) : ""}</span><span>·</span><span>${esc(a.sector || "")}</span><span>·</span><span>${esc([a.city, a.country].filter(Boolean).join(", "))}</span>${a.age ? `<span>·</span><span>${esc(a.age)} años</span>` : ""}<span>·</span><span>Plan ${esc(a.plan || "Pro")}</span></div>
+              <div class="meta">${esc(a.email)}${a.document ? " · DNI " + esc(a.document) : ""}${a.linkedin ? " · " + esc(a.linkedin) : ""}${a.instagram ? " · IG " + esc(a.instagram) : ""}</div>
+              ${a.msg ? `<div class="meta">"${esc(a.msg)}"</div>` : ""}
+            </div>
+            <div class="ra">
+              ${a.status === "pending" ? `<button class="btn-xs ok" data-approve="${a.id}">Aprobar</button><button class="btn-xs danger" data-reject="${a.id}">Rechazar</button>` : `<span class="meta">${a.date || ""}</span>`}
+            </div>
+          </div>`).join("") : '<p class="muted">No hay solicitudes.</p>';
+      }
+
+      /* ---------- Eventos ---------- */
+      async function renderEvents() {
+        const list = await EthAdmin.listEvents();
+        $("eventsList").innerHTML = list.length ? list.map((e) => `
+          <div class="admin-row">
+            <div class="ri"><h4>${esc(e.title)}</h4>
+              <div class="meta"><span>${esc(e.date)}</span><span>·</span><span>${esc(e.type)}</span><span>·</span><span>${esc(e.city)}</span><span>·</span><span>${esc(e.mode)}</span><span>·</span><span>Plan ${esc(e.plan)}+</span></div>
+            </div>
+            <div class="ra"><button class="btn-xs" data-edit-ev="${e.id}">Editar</button><button class="btn-xs danger" data-del-ev="${e.id}">Borrar</button></div>
+          </div>`).join("") : '<p class="muted">No hay eventos. Crea el primero.</p>';
+      }
+
+      /* ---------- Recursos ---------- */
+      async function renderResources() {
+        const list = await EthAdmin.listResources();
+        $("resourcesList").innerHTML = list.length ? list.map((r) => `
+          <div class="admin-row">
+            <div class="ri"><h4>${esc(r.title)}</h4><div class="meta"><span>${esc(r.cat)}</span><span>·</span><span>${esc(r.type)}</span></div></div>
+            <div class="ra"><button class="btn-xs" data-edit-res="${r.id}">Editar</button><button class="btn-xs danger" data-del-res="${r.id}">Borrar</button></div>
+          </div>`).join("") : '<p class="muted">No hay recursos.</p>';
+      }
+
+      /* ---------- Beneficios ---------- */
+      async function renderPerks() {
+        const list = await EthAdmin.listPerks();
+        $("perksList").innerHTML = list.length ? list.map((p) => `
+          <div class="admin-row">
+            <div class="ri"><h4>${esc(p.title)}</h4><div class="meta"><span>${esc(p.partner)}</span><span>·</span><span>${esc(p.value)}</span><span>·</span><span>Plan ${esc(p.plan)}+</span></div></div>
+            <div class="ra"><button class="btn-xs" data-edit-pk="${p.id}">Editar</button><button class="btn-xs danger" data-del-pk="${p.id}">Borrar</button></div>
+          </div>`).join("") : '<p class="muted">No hay beneficios.</p>';
+      }
+
+      /* ---------- Miembros ---------- */
+      async function renderMembers() {
+        const list = await EthAdmin.listMembers();
+        $("membersList").innerHTML = list.length ? list.map((m) => `
+          <div class="admin-row">
+            <div class="ri"><h4>${esc(m.name)}</h4><div class="meta"><span>${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</span><span>·</span><span>${esc(m.sector || "")}</span><span>·</span><span>${esc(m.city || "")}</span></div></div>
+            <div class="ra">
+              <select class="mini" data-plan="${m.email}">
+                ${["Starter", "Pro", "Elite"].map((p) => `<option ${m.plan === p ? "selected" : ""}>${p}</option>`).join("")}
+              </select>
+              <button class="btn-xs danger" data-del-mem="${m.email}">Quitar</button>
+            </div>
+          </div>`).join("") : '<p class="muted">No hay miembros.</p>';
+      }
+
+      /* ---------- Core Groups ---------- */
+      async function renderGroups() {
+        const list = await EthAdmin.listGroups();
+        $("groupsList").innerHTML = list.length ? list.map((g) => `
+          <div class="admin-row">
+            <div class="ri"><h4>${esc(g.name)}</h4>
+              <div class="meta"><span>${g.members.length} miembros</span>${g.schedule ? `<span>·</span><span>${esc(g.schedule)}</span>` : ""}</div>
+              <div class="meta">${g.members.map((m) => esc(m.name)).join(", ") || "Sin miembros asignados"}</div></div>
+            <div class="ra"><button class="btn-xs" data-edit-grp="${g.id}">Editar</button><button class="btn-xs danger" data-del-grp="${g.id}">Borrar</button></div>
+          </div>`).join("") : '<p class="muted">No hay grupos. Crea el primer Core Group.</p>';
+      }
+      function groupForm(g, members) {
+        g = g || {}; const sel = new Set(g.memberUids || []);
+        const checks = members.map((m) => `<label class="grp-check"><input type="checkbox" name="m_${m.uid}" ${sel.has(m.uid) ? "checked" : ""}><span>${esc(m.name)} <span class="muted">${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</span></span></label>`).join("");
+        return `
+          <input type="hidden" name="id" value="${esc(g.id || "")}">
+          <div class="field"><label>Nombre del grupo</label><input name="name" value="${esc(g.name || "")}" required placeholder="Ej: Core Group · Escala SaaS"></div>
+          <div class="field"><label>Próxima sesión / cadencia</label><input name="schedule" value="${esc(g.schedule || "")}" placeholder="Ej: 1er martes del mes · 18:00 (online)"></div>
+          <div class="field"><label>Descripción / enfoque</label><textarea name="description" placeholder="De qué va el grupo y cómo trabajan juntos.">${esc(g.description || "")}</textarea></div>
+          <div class="field"><label>Miembros del grupo (${members.length} disponibles)</label><div class="grp-picker">${checks || '<p class="muted">Aún no hay miembros aprobados.</p>'}</div></div>
+          <div class="modal-actions"><button type="button" class="btn btn-ghost" id="mCancel">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>`;
+      }
+      function groupData() {
+        const o = { memberUids: [] };
+        new FormData($("modalForm")).forEach((v, k) => { if (k.startsWith("m_")) o.memberUids.push(k.slice(2)); else o[k] = v; });
+        if (!o.id) delete o.id;
+        return o;
+      }
+      $("newGroup").onclick = async () => { modalKind = "group"; const members = await EthAdmin.listMembers(); openModal("Nuevo Core Group", groupForm(null, members)); };
+
+      /* ---------- Modal ---------- */
+      const modal = $("modal");
+      function openModal(title, html) { $("modalTitle").textContent = title; $("modalForm").innerHTML = html; modal.classList.add("on"); }
+      function closeModal() { modal.classList.remove("on"); }
+      modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+      function eventForm(ev) {
+        ev = ev || {};
+        const sel = (opts, val) => opts.map((o) => `<option ${o === val ? "selected" : ""}>${o}</option>`).join("");
+        return `
+          <input type="hidden" name="id" value="${esc(ev.id || "")}">
+          <div class="field"><label>Título</label><input name="title" value="${esc(ev.title || "")}" required></div>
+          <div class="field-row">
+            <div class="field"><label>Fecha</label><input name="date" type="date" value="${esc(ev.date || "")}" required></div>
+            <div class="field"><label>Tipo</label><input name="type" value="${esc(ev.type || "Mastermind")}" required></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Ciudad</label><input name="city" value="${esc(ev.city || "")}"></div>
+            <div class="field"><label>Modalidad</label><select name="mode">${sel(["Presencial", "Online", "Híbrido"], ev.mode || "Presencial")}</select></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Plan mínimo</label><select name="plan">${sel(["Starter", "Pro", "Elite"], ev.plan || "Pro")}</select></div>
+            <div class="field"><label>Plazas</label><input name="seats" type="number" value="${esc(ev.seats || 20)}"></div>
+          </div>
+          <div class="field"><label>Imagen (ruta)</label><input name="img" value="${esc(ev.img || "../assets/img/mastermind.webp")}"></div>
+          <div class="field"><label>Descripción</label><textarea name="desc">${esc(ev.desc || "")}</textarea></div>
+          <div class="modal-actions"><button type="button" class="btn btn-ghost" id="mCancel">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>`;
+      }
+      function resourceForm(r) {
+        r = r || {};
+        return `
+          <input type="hidden" name="id" value="${esc(r.id || "")}">
+          <div class="field"><label>Título</label><input name="title" value="${esc(r.title || "")}" required></div>
+          <div class="field-row">
+            <div class="field"><label>Categoría</label><input name="cat" value="${esc(r.cat || "")}" required></div>
+            <div class="field"><label>Tipo</label><input name="type" value="${esc(r.type || "Guía")}"></div>
+          </div>
+          <div class="field"><label>Descripción</label><textarea name="desc">${esc(r.desc || "")}</textarea></div>
+          <div class="modal-actions"><button type="button" class="btn btn-ghost" id="mCancel">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>`;
+      }
+      function perkForm(p) {
+        p = p || {};
+        const sel = (opts, val) => opts.map((o) => `<option ${o === val ? "selected" : ""}>${o}</option>`).join("");
+        return `
+          <input type="hidden" name="id" value="${esc(p.id || "")}">
+          <div class="field"><label>Título del beneficio</label><input name="title" value="${esc(p.title || "")}" required></div>
+          <div class="field-row">
+            <div class="field"><label>Partner</label><input name="partner" value="${esc(p.partner || "")}" required></div>
+            <div class="field"><label>Valor (ej. $5,000)</label><input name="value" value="${esc(p.value || "")}"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Plan mínimo</label><select name="plan">${sel(["Starter", "Pro", "Elite"], p.plan || "Pro")}</select></div>
+            <div class="field"><label>Texto del botón</label><input name="cta" value="${esc(p.cta || "Canjear")}"></div>
+          </div>
+          <div class="field"><label>Descripción</label><textarea name="desc">${esc(p.desc || "")}</textarea></div>
+          <div class="modal-actions"><button type="button" class="btn btn-ghost" id="mCancel">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>`;
+      }
+      function formData() { const o = {}; new FormData($("modalForm")).forEach((v, k) => (o[k] = v)); if (!o.id) delete o.id; return o; }
+
+      let modalKind = null;
+      $("newEvent").onclick = () => { modalKind = "event"; openModal("Nuevo evento", eventForm()); };
+      $("newResource").onclick = () => { modalKind = "resource"; openModal("Nuevo recurso", resourceForm()); };
+      $("newPerk").onclick = () => { modalKind = "perk"; openModal("Nuevo beneficio", perkForm()); };
+
+      $("modalForm").addEventListener("click", (e) => { if (e.target.id === "mCancel") closeModal(); });
+      $("modalForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const d = formData();
+        if (modalKind === "event") { const r = await EthAdmin.saveEvent(d); EthShell.toast(r.ok ? "Evento guardado ✦" : (r.error || "Error")); await renderEvents(); }
+        else if (modalKind === "perk") { const r = await EthAdmin.savePerk(d); EthShell.toast(r.ok ? "Beneficio guardado ✦" : (r.error || "Error")); await renderPerks(); }
+        else if (modalKind === "group") { const r = await EthAdmin.saveGroup(groupData()); EthShell.toast(r.ok ? "Grupo guardado ✦ Los miembros ya lo ven en \"Mi grupo\"" : (r.error || "Error")); await renderGroups(); }
+        else { const r = await EthAdmin.saveResource(d); EthShell.toast(r.ok ? "Recurso guardado ✦" : (r.error || "Error")); await renderResources(); }
+        closeModal();
+      });
+
+      /* ---------- Delegated actions ---------- */
+      document.getElementById("app").addEventListener("click", async (e) => {
+        const t = e.target.closest("button, [data-edit-ev]"); if (!t) return;
+        const d = t.dataset;
+        if (d.approve) { await EthAdmin.approveApplication(d.approve); EthShell.toast("Solicitud aprobada ✦ Miembro añadido"); renderApps(); renderMembers(); }
+        else if (d.reject) { await EthAdmin.rejectApplication(d.reject); EthShell.toast("Solicitud rechazada"); renderApps(); }
+        else if (d.delEv) { if (confirm("¿Borrar este evento?")) { await EthAdmin.deleteEvent(d.delEv); EthShell.toast("Evento borrado"); renderEvents(); } }
+        else if (d.editEv) { const ev = (await EthAdmin.listEvents()).find((x) => x.id === d.editEv); modalKind = "event"; openModal("Editar evento", eventForm(ev)); }
+        else if (d.delRes) { if (confirm("¿Borrar este recurso?")) { await EthAdmin.deleteResource(d.delRes); EthShell.toast("Recurso borrado"); renderResources(); } }
+        else if (d.editRes) { const r = (await EthAdmin.listResources()).find((x) => x.id === d.editRes); modalKind = "resource"; openModal("Editar recurso", resourceForm(r)); }
+        else if (d.delPk) { if (confirm("¿Borrar este beneficio?")) { await EthAdmin.deletePerk(d.delPk); EthShell.toast("Beneficio borrado"); renderPerks(); } }
+        else if (d.editPk) { const p = (await EthAdmin.listPerks()).find((x) => x.id === d.editPk); modalKind = "perk"; openModal("Editar beneficio", perkForm(p)); }
+        else if (d.delMem) { if (confirm("¿Quitar a este miembro?")) { await EthAdmin.removeMember(d.delMem); EthShell.toast("Miembro quitado"); renderMembers(); } }
+        else if (d.editGrp) { const g = (await EthAdmin.listGroups()).find((x) => x.id === d.editGrp); const members = await EthAdmin.listMembers(); modalKind = "group"; openModal("Editar grupo", groupForm(g, members)); }
+        else if (d.delGrp) { if (confirm("¿Borrar este grupo?")) { await EthAdmin.deleteGroup(d.delGrp); EthShell.toast("Grupo borrado"); renderGroups(); } }
+      });
+      document.getElementById("app").addEventListener("change", async (e) => {
+        const sel = e.target.closest("select[data-plan]"); if (!sel) return;
+        await EthAdmin.updateMember(sel.dataset.plan, { plan: sel.value });
+        EthShell.toast("Plan actualizado a " + sel.value);
+      });
+
+      await Promise.all([renderOverview(), renderApps(), renderEvents(), renderResources(), renderPerks(), renderMembers(), renderGroups(), renderSettings()]);
+    })();
+  </script>
+</body>
+</html>

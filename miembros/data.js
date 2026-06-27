@@ -1,0 +1,92 @@
+/* =========================================================
+   ETH FOUNDERS — Datos (backend real: /api/db)
+   Carga un snapshot compartido y aplica operaciones vía API.
+   ========================================================= */
+(function () {
+  let snap = null;
+  const get = () => fetch("/api/db", { credentials: "same-origin" }).then((r) => r.json());
+  const post = (op, payload) => fetch("/api/db", {
+    method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(Object.assign({ op }, payload))
+  }).then((r) => r.json());
+
+  async function ensure() { if (!snap) snap = await get(); return snap; }
+  async function refresh() { snap = await get(); return snap; }
+
+  const EthData = {
+    refresh,
+    async channels() { return (await ensure()).channels || []; },
+    async events() { return (await ensure()).events || []; },
+    async members() { return (await ensure()).members || []; },
+    async resources() { return (await ensure()).resources || []; },
+    async perks() { return (await ensure()).perks || []; },
+    async posts() { return (await ensure()).posts || []; },
+    async applications() { return (await ensure()).applications || []; },
+    async myRsvps() { return new Set((await ensure()).myRsvps || []); },
+
+    likedSet() {
+      const s = new Set();
+      if (snap) (snap.posts || []).forEach((p) => { if (p.liked) s.add(p.id); });
+      return s;
+    },
+
+    async toggleRsvp(eventId) {
+      const d = await post("toggleRsvp", { eventId });
+      if (snap) { snap.myRsvps = snap.myRsvps || []; const i = snap.myRsvps.indexOf(eventId);
+        if (d.going && i < 0) snap.myRsvps.push(eventId); if (!d.going && i >= 0) snap.myRsvps.splice(i, 1); }
+      return d.going;
+    },
+    async addPost(p, user) {
+      const d = await post("addPost", { channel: p.channel, text: p.text });
+      if (d.post && snap) snap.posts.unshift(d.post);
+      return d.post;
+    },
+    async toggleLikePost(id) {
+      const d = await post("toggleLike", { postId: id });
+      if (snap) { const pp = snap.posts.find((x) => x.id === id); if (pp) { pp.likes = d.likes; pp.liked = d.liked; } }
+      return { liked: d.liked, likes: d.likes };
+    },
+    async addComment(id, text) {
+      const d = await post("addComment", { postId: id, text });
+      if (snap && d.comments) { const pp = snap.posts.find((x) => x.id === id); if (pp) pp.comments = d.comments; }
+      return d.comments || [];
+    },
+    async deletePost(id) {
+      const d = await post("deletePost", { postId: id });
+      if (snap && d.ok) snap.posts = (snap.posts || []).filter((x) => x.id !== id);
+      return d;
+    },
+    async settings() { return (await ensure()).settings || {}; },
+    async saveSettings(patch) {
+      const d = await post("saveSettings", { patch });
+      if (snap && d.settings) snap.settings = d.settings;
+      return d;
+    },
+
+    /* ----- core groups ----- */
+    async myGroup() { return (await ensure()).myGroup || null; },
+    async groups() { return (await ensure()).groups || []; },
+    async saveGroup(item) { const d = await post("saveGroup", { item }); await refresh(); return d; },
+    async deleteGroup(id) { const d = await post("deleteGroup", { id }); await refresh(); return d; },
+
+    /* ----- mensajes + notificaciones ----- */
+    async me() { return (await ensure()).me || {}; },
+    meUid() { return snap && snap.me ? snap.me.uid : null; },
+    async myDms() { return (await ensure()).myDms || []; },
+    async notifications() { return (await ensure()).notifications || []; },
+    async unreadNotifs() { return (await ensure()).unreadNotifs || 0; },
+    unreadDmCount() { return snap ? (snap.myDms || []).reduce((a, c) => a + (c.unread || 0), 0) : 0; },
+    async sendDM(toUid, text) { return post("sendDM", { toUid, text }); },
+    async readDM(uid) {
+      if (snap) { const c = (snap.myDms || []).find((x) => x.uid === uid); if (c) c.unread = 0; }
+      return post("readDM", { uid });
+    },
+    async markNotifsRead() {
+      const d = await post("markNotifsRead", {});
+      if (snap) { (snap.notifications || []).forEach((n) => (n.read = true)); snap.unreadNotifs = 0; }
+      return d;
+    }
+  };
+
+  window.EthData = EthData;
+})();

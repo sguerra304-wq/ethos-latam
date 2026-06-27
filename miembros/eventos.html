@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Eventos — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <h1 class="page-title">Eventos</h1>
+      <p class="page-sub">Reserva tu plaza en los próximos encuentros de la comunidad.</p>
+
+      <div class="dir-toolbar">
+        <input type="search" id="q" placeholder="Buscar evento, ciudad…">
+        <select id="ftype"><option value="">Todos los tipos</option></select>
+        <select id="fmode">
+          <option value="">Presencial y online</option>
+          <option>Presencial</option><option>Online</option><option>Híbrido</option>
+        </select>
+      </div>
+
+      <div class="ev-list" id="list"></div>
+    </main>
+  </div>
+
+  <div class="modal" id="modal"><div class="modal-card"><div id="modalBody"></div></div></div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("eventos");
+      if (!user) return;
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      let all = [], rsvps = new Set();
+      const today = new Date().toISOString().slice(0, 10);
+      async function load() {
+        const [events, r] = await Promise.all([EthData.events(), EthData.myRsvps()]);
+        all = events.filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+        rsvps = r;
+      }
+      await load();
+
+      const ftype = document.getElementById("ftype");
+      [...new Set(all.map((e) => e.type))].forEach((t) => { const o = document.createElement("option"); o.textContent = t; ftype.appendChild(o); });
+
+      const q = document.getElementById("q"), fmode = document.getElementById("fmode"), list = document.getElementById("list");
+      const modal = document.getElementById("modal"), body = document.getElementById("modalBody");
+      const stack = (e) => { const cnt = e.rsvpCount || 0; if (!cnt) return ""; return `<div class="att-stack">${(e.attendees || []).slice(0, 5).map((a) => `<span class="att" title="${esc(a.name)}">${esc(a.initials)}</span>`).join("")}${cnt > 5 ? `<span class="att more">+${cnt - 5}</span>` : ""}<span class="att-label">${cnt} ${cnt === 1 ? "asiste" : "asisten"}</span></div>`; };
+
+      function render() {
+        const term = q.value.toLowerCase(), ty = ftype.value, mo = fmode.value;
+        const rows = all.filter((e) =>
+          (!ty || e.type === ty) && (!mo || e.mode === mo) &&
+          (!term || (e.title + " " + e.city + " " + e.type).toLowerCase().includes(term))
+        );
+        list.innerHTML = rows.length ? rows.map((e) => {
+          const d = EthShell.fmtDate(e.date);
+          const cnt = e.rsvpCount || 0, nearFull = e.seats && cnt >= e.seats * 0.8;
+          return `<div class="ev-item ev-click" data-open="${e.id}" style="grid-template-columns:58px 1fr auto">
+              <div class="d"><b>${d.day}</b><span>${d.mon}</span></div>
+              <div style="min-width:0"><h4>${esc(e.title)} ${nearFull ? '<span class="full-pill">Casi lleno</span>' : ""}</h4><div class="meta"><span>${esc(e.type)}</span><span>·</span><span>${esc(e.city)}</span><span>·</span><span>${esc(e.mode)}</span><span>·</span><span>Plan ${esc(e.plan)}+</span>${e.seats ? `<span>·</span><span>👥 ${cnt}/${e.seats} plazas</span>` : ""}</div>${stack(e)}</div>
+              <button class="btn-rsvp ${rsvps.has(e.id) ? "on" : ""}" data-id="${e.id}">${rsvps.has(e.id) ? "✓ Asistes" : "Reservar"}</button>
+            </div>`;
+        }).join("") : '<p class="muted">No hay eventos que coincidan con tu búsqueda.</p>';
+      }
+      [q, ftype, fmode].forEach((el) => el.addEventListener("input", render));
+      render();
+
+      function openEvent(e) {
+        const d = EthShell.fmtDate(e.date), cnt = e.rsvpCount || 0, going = rsvps.has(e.id);
+        body.innerHTML = `<div class="ev-detail">
+          ${e.img ? `<div class="media-frame" style="aspect-ratio:16/9; margin-bottom:16px"><img src="${esc(e.img)}" alt="" style="width:100%;height:100%;object-fit:cover"></div>` : ""}
+          <h3 style="margin-bottom:6px">${esc(e.title)}</h3>
+          <div class="meta" style="color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px"><span>${d.day} ${d.mon}</span><span>·</span><span>${esc(e.type)}</span><span>·</span><span>${esc(e.city)}</span><span>·</span><span>${esc(e.mode)}</span><span>·</span><span>Plan ${esc(e.plan)}+</span></div>
+          <p style="color:var(--ink-soft); margin-bottom:18px">${esc(e.desc || "")}</p>
+          <h4 style="font-size:1rem; margin-bottom:12px">${cnt ? cnt + (cnt === 1 ? " founder asiste" : " founders asisten") : "Sé el primero en reservar"}${e.seats ? ` · ${e.seats} plazas` : ""}</h4>
+          <div class="att-list">${(e.attendees || []).map((a) => `<a class="att-chip" href="mensajes.html?u=${esc(a.uid)}"><span class="att">${esc(a.initials)}</span>${esc(a.name)}</a>`).join("") || '<span class="muted">Aún nadie ha confirmado. ¡Anímate!</span>'}</div>
+          <div class="modal-actions" style="margin-top:22px"><button class="btn btn-ghost" data-close>Cerrar</button><button class="btn ${going ? "btn-ghost" : "btn-primary"}" data-rsvp="${e.id}">${going ? "✓ Asistes — cancelar" : "Reservar plaza"}</button></div>
+        </div>`;
+        modal.classList.add("on");
+      }
+      const closeModal = () => modal.classList.remove("on");
+      modal.addEventListener("click", (ev) => { if (ev.target === modal) closeModal(); });
+
+      async function toggle(id) {
+        const now = await EthData.toggleRsvp(id);
+        await load(); render();
+        EthShell.toast(now ? "¡Plaza reservada! 🎉" : "Reserva cancelada.");
+        return now;
+      }
+
+      list.addEventListener("click", async (ev) => {
+        const btn = ev.target.closest(".btn-rsvp");
+        if (btn) { ev.stopPropagation(); await toggle(btn.dataset.id); return; }
+        const card = ev.target.closest("[data-open]");
+        if (card) { const e = all.find((x) => x.id === card.dataset.open); if (e) openEvent(e); }
+      });
+      body.addEventListener("click", async (ev) => {
+        if (ev.target.closest("[data-close]")) { closeModal(); return; }
+        const rb = ev.target.closest("[data-rsvp]");
+        if (rb) { await toggle(rb.dataset.rsvp); const e = all.find((x) => x.id === rb.dataset.rsvp); if (e) openEvent(e); }
+      });
+    })();
+  </script>
+</body>
+</html>

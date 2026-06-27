@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Beneficios — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <h1 class="page-title">Beneficios</h1>
+      <p class="page-sub" id="sub">Deals exclusivos de partners, solo para miembros. Tu plan desbloquea más.</p>
+
+      <div class="welcome" id="savingBanner" style="margin-bottom:24px">
+        <h1 style="font-size:clamp(1.4rem,3vw,2rem)">Ahorra miles con tu membresía</h1>
+        <p class="wsub" id="savingSub">Estás desbloqueando beneficios por un valor de…</p>
+        <div class="wrow"><div class="wstat"><b id="unlockedValue">$0</b><span>Valor desbloqueado</span></div><div class="wstat"><b id="unlockedCount">0</b><span>Beneficios disponibles</span></div></div>
+      </div>
+
+      <div class="perks-grid" id="grid"></div>
+    </main>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("beneficios");
+      if (!user) return;
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      const RANK = { Starter: 1, Pro: 2, Elite: 3 };
+      const myRank = RANK[user.plan] || 1;
+
+      const perks = await EthData.perks();
+      const num = (v) => Number(String(v).replace(/[^0-9.]/g, "")) || 0;
+      let unlockedValue = 0, unlockedCount = 0;
+
+      $("grid").innerHTML = perks.map((p) => {
+        const need = RANK[p.plan] || 1;
+        const unlocked = myRank >= need;
+        if (unlocked) { unlockedValue += num(p.value); unlockedCount++; }
+        return `<div class="perk ${unlocked ? "" : "locked"}">
+          <div class="ptop"><span class="partner">${esc(p.partner)}</span><span class="value">${esc(p.value)}</span></div>
+          <div class="perk-plan">Plan ${esc(p.plan)}+</div>
+          <h4>${esc(p.title)}</h4>
+          <p>${esc(p.desc)}</p>
+          ${unlocked
+            ? `<button class="btn btn-primary" data-redeem="${esc(p.title)}">${esc(p.cta || "Canjear")}</button>`
+            : `<div class="lock-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-linecap="round"/></svg> Sube a ${esc(p.plan)} para desbloquear</div>
+               <a href="../planes.html#planes" class="btn btn-ghost" style="margin-top:10px">Ver planes</a>`}
+        </div>`;
+      }).join("");
+
+      $("unlockedValue").textContent = "$" + unlockedValue.toLocaleString("es-ES");
+      $("unlockedCount").textContent = unlockedCount;
+      $("savingSub").textContent = "Con tu plan " + (user.plan || "Pro") + " ya tienes acceso a estos beneficios:";
+
+      $("grid").addEventListener("click", (e) => {
+        const b = e.target.closest("[data-redeem]"); if (!b) return;
+        EthShell.toast("¡Beneficio activado! Te enviamos los detalles por email ✦");
+      });
+    })();
+  </script>
+</body>
+</html>

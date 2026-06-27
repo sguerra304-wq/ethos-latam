@@ -1,0 +1,12 @@
+{
+  "name": "Ethos LATAM",
+  "short_name": "Ethos LATAM",
+  "description": "El club de founders de alto rendimiento — comunidad, eventos, beneficios y wellness.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBFBF8",
+  "theme_color": "#0E1014",
+  "icons": [
+    { "src": "/assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

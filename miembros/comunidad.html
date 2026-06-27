@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Comunidad — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <h1 class="page-title">Comunidad</h1>
+      <p class="page-sub">Comparte tus avances, pide ayuda y celebra los wins del club.</p>
+
+      <div class="channel-chips" id="chips"></div>
+      <div class="composer">
+        <div class="crow">
+          <span class="av" id="myav">ET</span>
+          <div style="flex:1">
+            <textarea id="ptext" placeholder="¿Qué estás construyendo hoy?"></textarea>
+            <div class="cbtns">
+              <select id="pchannel"></select>
+              <button class="btn btn-primary" id="publish">Publicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feed-col" id="feed"></div>
+    </main>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("comunidad");
+      if (!user) return;
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      const inits = (n) => (n || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
+      const channels = await EthData.channels();
+      const chMap = {}; channels.forEach((c) => (chMap[c.id] = c));
+      let filter = "all";
+      $("myav").textContent = user.initials || inits(user.name);
+
+      // chips
+      $("chips").innerHTML = `<button class="chip-ch on" data-ch="all">Todos</button>` +
+        channels.map((c) => `<button class="chip-ch" data-ch="${c.id}">${c.emoji} ${esc(c.name)}</button>`).join("");
+      // channel select
+      $("pchannel").innerHTML = channels.map((c) => `<option value="${c.id}">${c.emoji} ${esc(c.name)}</option>`).join("");
+
+      let posts = await EthData.posts();
+      let liked = EthData.likedSet();
+
+      function postHtml(p) {
+        const ch = chMap[p.channel] || { emoji: "💬", name: p.channel };
+        const isLiked = liked.has(p.id);
+        return `<div class="post" data-id="${p.id}">
+          <div class="phead"><span class="av">${esc(p.initials || inits(p.author))}</span>
+            <div class="pmeta"><b>${esc(p.author)}</b><div class="sub"><span>${ch.emoji} ${esc(ch.name)}</span><span>·</span><span>${esc(EthShell.relTime(p.ts, p.time))}</span></div></div>
+            ${p.mine ? `<button class="post-del" data-del="${p.id}" title="Eliminar" aria-label="Eliminar publicación">✕</button>` : ""}</div>
+          <div class="ptext">${esc(p.text)}</div>
+          <div class="pactions">
+            <button class="pact like ${isLiked ? "liked" : ""}" data-like="${p.id}">
+              <svg viewBox="0 0 24 24" fill="${isLiked ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="lk">${p.likes || 0}</span>
+            </button>
+            <button class="pact" data-cmt="${p.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.2-5.3A8.5 8.5 0 1 1 21 11.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              ${(p.comments || []).length} comentar
+            </button>
+          </div>
+          <div class="comments">${(p.comments || []).map((c) => `<div class="comment"><span class="av">${esc(inits(c.author))}</span><div class="cb"><b>${esc(c.author)}</b>${esc(c.text)}</div></div>`).join("")}</div>
+          <div class="comment-input"><input type="text" placeholder="Escribe un comentario…" data-cinput="${p.id}"><button class="btn btn-ghost" data-csend="${p.id}">Enviar</button></div>
+        </div>`;
+      }
+      function render() {
+        const list = filter === "all" ? posts : posts.filter((p) => p.channel === filter);
+        $("feed").innerHTML = list.length ? list.map(postHtml).join("") : '<p class="muted">Sé el primero en publicar en este canal.</p>';
+      }
+      render();
+
+      $("chips").addEventListener("click", (e) => {
+        const b = e.target.closest(".chip-ch"); if (!b) return;
+        filter = b.dataset.ch;
+        document.querySelectorAll(".chip-ch").forEach((x) => x.classList.toggle("on", x === b));
+        render();
+      });
+
+      $("publish").onclick = async () => {
+        const text = $("ptext").value.trim(); if (!text) { EthShell.toast("Escribe algo primero ✍️"); return; }
+        const item = await EthData.addPost({ channel: $("pchannel").value, text }, user);
+        posts.unshift(item); $("ptext").value = "";
+        if (filter !== "all" && filter !== item.channel) { filter = "all"; document.querySelectorAll(".chip-ch").forEach((x) => x.classList.toggle("on", x.dataset.ch === "all")); }
+        render(); EthShell.toast("¡Publicado! 🎉");
+      };
+
+      $("feed").addEventListener("click", async (e) => {
+        const lk = e.target.closest("[data-like]");
+        if (lk) { const r = await EthData.toggleLikePost(lk.dataset.like); liked = EthData.likedSet();
+          const btn = $("feed").querySelector('[data-like="' + lk.dataset.like + '"]');
+          btn.classList.toggle("liked", r.liked); btn.querySelector(".lk").textContent = r.likes;
+          btn.querySelector("svg").setAttribute("fill", r.liked ? "currentColor" : "none"); return; }
+        const send = e.target.closest("[data-csend]");
+        if (send) { const id = send.dataset.csend; const inp = $("feed").querySelector('[data-cinput="' + id + '"]');
+          const t = inp.value.trim(); if (!t) return;
+          await EthData.addComment(id, t, user); posts = await EthData.posts(); render(); EthShell.toast("Comentario añadido"); return; }
+        const del = e.target.closest("[data-del]");
+        if (del) { if (!confirm("¿Eliminar esta publicación?")) return;
+          await EthData.deletePost(del.dataset.del); posts = posts.filter((p) => p.id !== del.dataset.del); render(); EthShell.toast("Publicación eliminada"); }
+      });
+      // Enviar comentario con Enter
+      $("feed").addEventListener("keydown", (e) => {
+        const inp = e.target.closest("[data-cinput]");
+        if (inp && e.key === "Enter") { e.preventDefault(); const id = inp.dataset.cinput; const btn = $("feed").querySelector('[data-csend="' + id + '"]'); if (btn) btn.click(); }
+      });
+    })();
+  </script>
+</body>
+</html>

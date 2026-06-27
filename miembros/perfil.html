@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Perfil — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <h1 class="page-title">Tu perfil</h1>
+      <p class="page-sub">Así te ve el resto de la comunidad en el directorio.</p>
+
+      <div class="panel" style="margin-bottom:20px">
+        <form id="profForm">
+          <div class="prof-grid">
+            <div class="field"><label for="name">Nombre completo</label><input id="name" type="text"></div>
+            <div class="field"><label for="company">Empresa / proyecto</label><input id="company" type="text" placeholder="Nombre de tu empresa"></div>
+            <div class="field"><label for="role">Rol</label>
+              <select id="role"><option>Founder</option><option>Co-founder</option><option>CEO</option><option>COO</option><option>Inversionista</option><option>Angel Investor</option><option>Operador</option><option>Otro</option></select>
+            </div>
+            <div class="field"><label for="sector">Sector</label><input id="sector" type="text" placeholder="SaaS, Fintech, HealthTech…"></div>
+            <div class="field"><label for="city">Ciudad</label><input id="city" type="text" placeholder="Lima"></div>
+            <div class="field"><label for="country">País</label>
+              <select id="country"><option value="">Selecciona…</option><option>Argentina</option><option>Bolivia</option><option>Brasil</option><option>Chile</option><option>Colombia</option><option>Costa Rica</option><option>Ecuador</option><option>El Salvador</option><option>España</option><option>Guatemala</option><option>Honduras</option><option>México</option><option>Nicaragua</option><option>Panamá</option><option>Paraguay</option><option>Perú</option><option>Rep. Dominicana</option><option>Uruguay</option><option>Venezuela</option><option>Otro</option></select>
+            </div>
+            <div class="field"><label for="linkedin">LinkedIn</label><input id="linkedin" type="text" placeholder="https://linkedin.com/in/…"></div>
+            <div class="field"><label for="instagram">Instagram</label><input id="instagram" type="text" placeholder="@tuusuario"></div>
+            <div class="field"><label for="email">Email</label><input id="email" type="email" disabled></div>
+            <div class="field full"><label for="bio">Bio corta</label><textarea id="bio" placeholder="Qué construyes y qué buscas en la comunidad."></textarea></div>
+            <div class="field full"><label for="offers">💡 Puedo ayudar con… <span class="muted" style="font-weight:400">— qué ofreces a la comunidad</span></label><input id="offers" type="text" maxlength="280" placeholder="Ej.: intros a fondos seed, growth B2B, contratar devs en LatAm"></div>
+            <div class="field full"><label for="asks">🙋 Busco ayuda con… <span class="muted" style="font-weight:400">— qué necesitas ahora</span></label><input id="asks" type="text" maxlength="280" placeholder="Ej.: feedback de pricing, primeros clientes enterprise, encontrar CTO"></div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg">Guardar cambios</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-bottom:16px">Tu suscripción</h3>
+        <div class="billing-card">
+          <div>
+            <span class="plan-pill" id="planPill">Plan Pro</span>
+            <p class="muted" style="margin-top:10px; font-size:14px" id="planDesc">Acceso a todos los eventos, masterminds, wellness y networking.</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn btn-ghost" id="btnPortal">Gestionar facturación</button>
+            <button class="btn btn-primary" id="btnChange">Cambiar de plan</button>
+          </div>
+        </div>
+        <p class="muted" id="billNote" style="font-size:13px; margin-top:16px"></p>
+      </div>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script src="billing.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("perfil");
+      if (!user) return;
+      const $ = (id) => document.getElementById(id);
+      $("name").value = user.name || "";
+      $("company").value = user.company || "";
+      $("sector").value = user.sector || "";
+      $("city").value = user.city || "";
+      $("linkedin").value = user.linkedin || "";
+      $("instagram").value = user.instagram || "";
+      $("bio").value = user.bio || "";
+      $("offers").value = user.offers || "";
+      $("asks").value = user.asks || "";
+      $("email").value = user.email || "";
+      if (user.country) { [...$("country").options].forEach((o) => { if (o.value === user.country) o.selected = true; }); }
+      if (user.role) { [...$("role").options].forEach((o) => { if (o.value === user.role) o.selected = true; }); }
+      $("planPill").textContent = "Plan " + (user.plan || "Pro");
+
+      $("profForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const patch = { name: $("name").value.trim(), company: $("company").value.trim(), role: $("role").value, sector: $("sector").value.trim(), city: $("city").value.trim(), country: $("country").value, linkedin: $("linkedin").value.trim(), instagram: $("instagram").value.trim(), bio: $("bio").value.trim(), offers: $("offers").value.trim(), asks: $("asks").value.trim() };
+        const r = await EthAuth.updateProfile(patch);
+        EthShell.toast(r.ok ? "Perfil guardado ✦" : "No se pudo guardar.");
+      };
+
+      $("btnPortal").onclick = () => EthBilling.portal();
+      $("btnChange").onclick = () => EthBilling.changePlan();
+      $("billNote").textContent = EthBilling.note();
+    })();
+  </script>
+</body>
+</html>

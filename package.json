@@ -1,0 +1,13 @@
+{
+  "name": "eth-founders",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Eth Founders — web + área de miembros (Supabase + Stripe)",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "@vercel/blob": "^2.4.1",
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3",
+    "stripe": "^17.0.0"
+  }
+}

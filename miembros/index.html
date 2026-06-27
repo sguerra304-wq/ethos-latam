@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Inicio — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <div id="announce"></div>
+      <div class="welcome" id="welcome">
+        <h1 id="greet">Hola 👋</h1>
+        <p class="wsub" id="greetSub">Esto es lo que se mueve hoy en tu comunidad.</p>
+        <div class="wrow" id="wstats"></div>
+      </div>
+
+      <div class="dash-grid">
+        <div style="display:grid; gap:20px">
+          <div class="panel">
+            <div class="ph"><h3>Tu próximo evento</h3><a href="eventos.html">Ver agenda →</a></div>
+            <div id="nextEvent"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3>Próximos eventos</h3><a href="eventos.html">Todos →</a></div>
+            <div class="ev-list" id="upcoming"></div>
+          </div>
+        </div>
+
+        <div style="display:grid; gap:20px; align-content:start">
+          <div class="panel" id="onboarding">
+            <div class="ph"><h3>Tu primer mes</h3><span class="muted" id="obPct" style="font-size:13px"></span></div>
+            <div class="progress"><i id="obBar"></i></div>
+            <div id="obList"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3>En la comunidad</h3><a href="comunidad.html">Ir al feed →</a></div>
+            <div id="feed"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3>Beneficios para ti</h3><a href="beneficios.html">Ver todos →</a></div>
+            <p class="muted" style="font-size:14px; margin-bottom:14px">Desbloquea deals de partners (cloud, software, wellness) por miles de dólares con tu membresía.</p>
+            <a href="beneficios.html" class="btn btn-primary btn-block">Explorar beneficios</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("dashboard");
+      if (!user) return;
+      const $ = (id) => document.getElementById(id);
+      const firstName = (user.name || "Founder").split(" ")[0];
+      const h = new Date().getHours();
+      const hi = h < 6 ? "Buenas noches" : h < 13 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches";
+      $("greet").textContent = `${hi}, ${firstName} 👋`;
+
+      const [events, members, rsvps, posts, settings] = await Promise.all([EthData.events(), EthData.members(), EthData.myRsvps(), EthData.posts(), EthData.settings()]);
+      if (settings && settings.announcement) {
+        const a = String(settings.announcement).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        $("announce").innerHTML = `<div class="announce-bar">📣 <span>${a}</span></div>`;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      const upcoming = events.filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+      const attending = upcoming.filter((e) => rsvps.has(e.id));
+      const points = attending.length * 50 + (user.company ? 100 : 0) + Math.min(members.length, 50) * 2;
+
+      $("wstats").innerHTML = [
+        ["Plan " + (user.plan || "Pro"), "Tu membresía"],
+        [attending.length, "Eventos confirmados"],
+        [points, "Puntos de comunidad"]
+      ].map((s) => `<div class="wstat"><b>${s[0]}</b><span>${s[1]}</span></div>`).join("");
+
+      const next = attending[0] || upcoming[0];
+      const ne = $("nextEvent");
+      if (next) {
+        const d = EthShell.fmtDate(next.date);
+        ne.innerHTML = `<div class="next-event"><img src="${next.img}" alt="">
+            <div class="ne"><span class="plan-pill">${d.day} ${d.mon} · ${next.type}</span>
+              <h4 style="margin-top:10px">${next.title}</h4><p>${next.city} · ${next.mode}</p>
+              <button class="btn-rsvp ${rsvps.has(next.id) ? "on" : ""}" data-id="${next.id}">${rsvps.has(next.id) ? "✓ Asistirás" : "Reservar plaza"}</button>
+            </div></div>`;
+      } else { ne.innerHTML = '<p class="muted">No hay eventos próximos por ahora.</p>'; }
+
+      $("upcoming").innerHTML = upcoming.slice(0, 4).map((e) => {
+        const d = EthShell.fmtDate(e.date);
+        return `<div class="ev-item"><div class="d"><b>${d.day}</b><span>${d.mon}</span></div>
+            <div><h4>${e.title}</h4><div class="meta"><span>${e.type}</span><span>·</span><span>${e.city}</span></div></div>
+            <button class="btn-rsvp ${rsvps.has(e.id) ? "on" : ""}" data-id="${e.id}">${rsvps.has(e.id) ? "✓ Asistes" : "Reservar"}</button></div>`;
+      }).join("");
+
+      const seen = (k) => localStorage.getItem("eth_seen_" + k) === "1";
+      const favs = JSON.parse(localStorage.getItem("eth_favs") || "[]");
+      const steps = [
+        { done: !!user.company, b: "Completa tu perfil", s: "Añade tu empresa y sector", href: "perfil.html", cta: "Editar" },
+        { done: rsvps.size > 0, b: "Reserva tu primer evento", s: "Asegura tu plaza", href: "eventos.html", cta: "Ver" },
+        { done: seen("dir"), b: "Explora el directorio", s: "Conoce a la comunidad", href: "directorio.html", cta: "Abrir" },
+        { done: favs.length > 0, b: "Guarda un recurso", s: "Empieza tu biblioteca", href: "recursos.html", cta: "Ver" }
+      ];
+      const ndone = steps.filter((s) => s.done).length;
+      $("obBar").style.width = (ndone / steps.length * 100) + "%";
+      $("obPct").textContent = ndone + "/" + steps.length + " completado";
+      $("obList").innerHTML = steps.map((s) => `<div class="check-item ${s.done ? "done" : ""}">
+          <span class="dot"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div class="ci"><b>${s.b}</b><span>${s.s}</span></div>
+          ${s.done ? "" : `<a href="${s.href}">${s.cta} →</a>`}</div>`).join("");
+
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      $("feed").innerHTML = (posts || []).slice(0, 4).map((p) =>
+        `<a class="feed-item" href="comunidad.html" style="text-decoration:none">
+           <span class="fav">${esc(p.initials || "?")}</span>
+           <div><p><b>${esc(p.author)}</b> ${esc((p.text || "").slice(0, 70))}${(p.text || "").length > 70 ? "…" : ""}</p><time>${esc(p.time || "")} · ${(p.likes || 0)} ♥</time></div>
+         </a>`).join("") || '<p class="muted">Aún no hay publicaciones.</p>';
+
+      $("app").addEventListener("click", async (ev) => {
+        const btn = ev.target.closest(".btn-rsvp"); if (!btn) return;
+        const id = btn.dataset.id; const now = await EthData.toggleRsvp(id);
+        EthShell.toast(now ? "¡Plaza reservada! Te esperamos." : "Reserva cancelada.");
+        document.querySelectorAll('.btn-rsvp[data-id="' + id + '"]').forEach((b) => {
+          b.classList.toggle("on", now);
+          b.textContent = now ? (b.closest(".next-event") ? "✓ Asistirás" : "✓ Asistes") : (b.closest(".next-event") ? "Reservar plaza" : "Reservar");
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

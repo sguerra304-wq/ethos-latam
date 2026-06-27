@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Mi grupo — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <h1 class="page-title">Tu Core Group</h1>
+      <p class="page-sub">Tu grupo reducido y recurrente: los founders que te acompañan de cerca.</p>
+      <div id="groupWrap"></div>
+    </main>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("grupo");
+      if (!user) return;
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      const inits = (n) => (n || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+      const me = await EthData.me();
+      const myUid = me.uid;
+      let group = await EthData.myGroup();
+      const wrap = $("groupWrap");
+
+      if (!group) {
+        wrap.innerHTML = `<div class="panel" style="text-align:center; padding:48px 24px">
+          <div style="font-size:40px; margin-bottom:10px">👥</div>
+          <h3 style="margin-bottom:8px">Tu grupo se está formando</h3>
+          <p class="muted" style="max-width:440px; margin:0 auto 18px">Pronto te asignaremos a un Core Group de 8–10 founders afines para acompañarte en el tiempo. Mientras tanto, explora la comunidad y el directorio.</p>
+          <a href="directorio.html" class="btn btn-primary">Explorar el directorio</a>
+        </div>`;
+        return;
+      }
+
+      function rosterHtml() {
+        return (group.members || []).map((m) => {
+          const pr = EthShell.presence(m.lastSeen); const isMe = m.uid === myUid;
+          return `<div class="mcard">
+            <div class="top"><span class="av${pr.online ? " on" : ""}">${esc(m.initials || "?")}</span>
+              <div><b>${esc(m.name)}${isMe ? ' <span class="tag lime" style="margin-left:4px">Tú</span>' : ""}</b>
+                <div class="rc">${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</div>
+                ${pr.label ? `<div class="pres ${pr.online ? "on" : ""}">${pr.label}</div>` : ""}</div></div>
+            ${isMe ? "" : `<a class="btn-intro" href="mensajes.html?u=${esc(m.uid)}">Enviar mensaje</a>`}
+          </div>`;
+        }).join("");
+      }
+
+      function postHtml(p) {
+        return `<div class="post" data-id="${p.id}">
+          <div class="phead"><span class="av">${esc(p.initials || inits(p.author))}</span>
+            <div class="pmeta"><b>${esc(p.author)}</b><div class="sub"><span>${esc(EthShell.relTime(p.ts, p.time))}</span></div></div>
+            ${p.mine ? `<button class="post-del" data-del="${p.id}" title="Eliminar">✕</button>` : ""}</div>
+          <div class="ptext">${esc(p.text)}</div>
+          <div class="pactions">
+            <button class="pact like ${p.liked ? "liked" : ""}" data-like="${p.id}">
+              <svg viewBox="0 0 24 24" fill="${p.liked ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="lk">${p.likes || 0}</span></button>
+            <button class="pact" data-cmt="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.2-5.3A8.5 8.5 0 1 1 21 11.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>${(p.comments || []).length} comentar</button>
+          </div>
+          <div class="comments">${(p.comments || []).map((c) => `<div class="comment"><span class="av">${esc(inits(c.author))}</span><div class="cb"><b>${esc(c.author)}</b>${esc(c.text)}</div></div>`).join("")}</div>
+          <div class="comment-input"><input type="text" placeholder="Escribe un comentario…" data-cinput="${p.id}"><button class="btn btn-ghost" data-csend="${p.id}">Enviar</button></div>
+        </div>`;
+      }
+
+      function render() {
+        const posts = group.posts || [];
+        wrap.innerHTML = `
+          <div class="welcome" style="margin-bottom:20px">
+            <h1>${esc(group.name)}</h1>
+            ${group.description ? `<p class="wsub">${esc(group.description)}</p>` : ""}
+            <div class="wrow">${group.schedule ? `<div class="wstat" style="min-width:auto"><b style="font-size:1rem">🗓️ Próxima sesión</b><span>${esc(group.schedule)}</span></div>` : ""}<div class="wstat" style="min-width:auto"><b style="font-size:1rem">${group.members.length} founders</b><span>en tu grupo</span></div></div>
+          </div>
+          <div class="dash-grid">
+            <div style="display:grid; gap:20px; align-content:start">
+              <div class="panel">
+                <div class="ph"><h3>Conversación del grupo</h3></div>
+                <div class="composer" style="box-shadow:none; padding:0; border:0; margin-bottom:18px">
+                  <div class="crow"><span class="av">${esc(user.initials || inits(user.name))}</span>
+                    <div style="flex:1"><textarea id="gtext" placeholder="Comparte un avance, una pregunta o un reto con tu grupo…"></textarea>
+                      <div class="cbtns"><span class="muted" style="font-size:13px">Privado · solo tu grupo</span><button class="btn btn-primary" id="gpub">Publicar</button></div></div></div>
+                </div>
+                <div class="feed-col" id="gfeed">${posts.length ? posts.map(postHtml).join("") : '<p class="muted">Aún no hay mensajes. ¡Rompe el hielo con tu grupo! 👋</p>'}</div>
+              </div>
+            </div>
+            <div class="panel" style="align-self:start">
+              <div class="ph"><h3>Miembros (${group.members.length})</h3></div>
+              <div style="display:grid; gap:12px">${rosterHtml()}</div>
+            </div>
+          </div>`;
+      }
+      render();
+
+      async function reload() { await EthData.refresh(); group = await EthData.myGroup(); render(); }
+
+      wrap.addEventListener("click", async (e) => {
+        const pub = e.target.closest("#gpub");
+        if (pub) { const t = $("gtext").value.trim(); if (!t) { EthShell.toast("Escribe algo primero ✍️"); return; } await EthData.addPost({ channel: "grp:" + group.id, text: t }); await reload(); EthShell.toast("Publicado en tu grupo 🎉"); return; }
+        const lk = e.target.closest("[data-like]");
+        if (lk) { const r = await EthData.toggleLikePost(lk.dataset.like); const btn = wrap.querySelector('[data-like="' + lk.dataset.like + '"]'); btn.classList.toggle("liked", r.liked); btn.querySelector(".lk").textContent = r.likes; btn.querySelector("svg").setAttribute("fill", r.liked ? "currentColor" : "none"); const pp = (group.posts || []).find((x) => x.id === lk.dataset.like); if (pp) { pp.liked = r.liked; pp.likes = r.likes; } return; }
+        const cs = e.target.closest("[data-csend]");
+        if (cs) { const id = cs.dataset.csend; const inp = wrap.querySelector('[data-cinput="' + id + '"]'); const t = inp.value.trim(); if (!t) return; const comments = await EthData.addComment(id, t); const pp = (group.posts || []).find((x) => x.id === id); if (pp) pp.comments = comments; render(); EthShell.toast("Comentario añadido"); return; }
+        const del = e.target.closest("[data-del]");
+        if (del) { if (!confirm("¿Eliminar esta publicación?")) return; await EthData.deletePost(del.dataset.del); group.posts = (group.posts || []).filter((x) => x.id !== del.dataset.del); render(); EthShell.toast("Publicación eliminada"); }
+      });
+      wrap.addEventListener("keydown", (e) => {
+        const inp = e.target.closest("[data-cinput]");
+        if (inp && e.key === "Enter") { e.preventDefault(); const b = wrap.querySelector('[data-csend="' + inp.dataset.cinput + '"]'); if (b) b.click(); }
+      });
+    })();
+  </script>
+</body>
+</html>
