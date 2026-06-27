@@ -50,7 +50,7 @@
       </section>
 
       <section class="admin-sec" id="sec-apps">
-        <div class="sec-head"><h3>Solicitudes de ingreso</h3></div>
+        <div class="sec-head"><h3>Solicitudes de ingreso</h3><input type="search" id="appSearch" class="admin-search" placeholder="Buscar por nombre, email, empresa…"></div>
         <div id="appsList"></div>
       </section>
 
@@ -70,7 +70,7 @@
       </section>
 
       <section class="admin-sec" id="sec-members">
-        <div class="sec-head"><h3>Miembros</h3></div>
+        <div class="sec-head"><h3>Miembros</h3><input type="search" id="memSearch" class="admin-search" placeholder="Buscar miembro…"></div>
         <div id="membersList"></div>
       </section>
 
@@ -81,10 +81,10 @@
       </section>
 
       <section class="admin-sec" id="sec-web">
-        <div class="sec-head"><h3>Solicitudes desde la web</h3></div>
+        <div class="sec-head"><h3>Solicitudes desde la web</h3><button class="btn-xs" id="expLeads">⬇ Exportar CSV</button></div>
         <p class="page-sub" style="margin-bottom:18px">Las personas que aplican en la web pública (ethoslatam.com) aparecen aquí automáticamente.</p>
         <div id="leadsList"></div>
-        <div class="sec-head" style="margin-top:32px"><h3>Suscriptores de la newsletter <span id="subCount" class="muted" style="font-size:14px; font-weight:400"></span></h3></div>
+        <div class="sec-head" style="margin-top:32px"><h3>Suscriptores de la newsletter <span id="subCount" class="muted" style="font-size:14px; font-weight:400"></span></h3><button class="btn-xs" id="expSubs">⬇ Exportar CSV</button></div>
         <div id="subsList"></div>
       </section>
 
@@ -156,8 +156,10 @@
 
       /* ---------- Solicitudes ---------- */
       async function renderApps() {
-        const apps = await EthAdmin.listApplications();
-        const pending = apps.filter((a) => a.status === "pending").length;
+        const allApps = await EthAdmin.listApplications();
+        const term = ($("appSearch").value || "").toLowerCase().trim();
+        const apps = term ? allApps.filter((a) => ((a.name || "") + " " + (a.email || "") + " " + (a.company || "") + " " + (a.role || "") + " " + (a.sector || "")).toLowerCase().includes(term)) : allApps;
+        const pending = allApps.filter((a) => a.status === "pending").length;
         $("appsCount").textContent = pending ? "(" + pending + ")" : "";
         $("appsList").innerHTML = apps.length ? apps.map((a) => `
           <div class="admin-row">
@@ -207,7 +209,9 @@
 
       /* ---------- Miembros ---------- */
       async function renderMembers() {
-        const list = await EthAdmin.listMembers();
+        const all = await EthAdmin.listMembers();
+        const term = ($("memSearch").value || "").toLowerCase().trim();
+        const list = term ? all.filter((m) => ((m.name || "") + " " + (m.company || "") + " " + (m.role || "") + " " + (m.sector || "") + " " + (m.city || "") + " " + (m.email || "")).toLowerCase().includes(term)) : all;
         $("membersList").innerHTML = list.length ? list.map((m) => `
           <div class="admin-row">
             <div class="ri"><h4>${esc(m.name)}</h4><div class="meta"><span>${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</span><span>·</span><span>${esc(m.sector || "")}</span><span>·</span><span>${esc(m.city || "")}</span></div></div>
@@ -365,6 +369,17 @@
         await EthAdmin.updateMember(sel.dataset.plan, { plan: sel.value });
         EthShell.toast("Plan actualizado a " + sel.value);
       });
+
+      /* buscadores del panel */
+      $("appSearch").addEventListener("input", renderApps);
+      $("memSearch").addEventListener("input", renderMembers);
+
+      /* exportar CSV */
+      const csvEsc = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+      const toCSV = (rows, cols) => [cols.map((c) => csvEsc(c.h)).join(","), ...rows.map((r) => cols.map((c) => csvEsc(r[c.k])).join(","))].join("\r\n");
+      const download = (name, text) => { const b = new Blob(["﻿" + text], { type: "text/csv;charset=utf-8" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
+      $("expLeads").onclick = async () => { const leads = await EthAdmin.listLeads(); if (!leads.length) { EthShell.toast("No hay solicitudes"); return; } download("solicitudes-ethos.csv", toCSV(leads.map((l) => ({ ...l, fecha: new Date(l.ts).toISOString().slice(0, 10) })), [{ h: "Fecha", k: "fecha" }, { h: "Nombre", k: "name" }, { h: "Email", k: "email" }, { h: "Empresa", k: "company" }, { h: "Rol", k: "role" }, { h: "Plan", k: "plan" }, { h: "Link", k: "link" }, { h: "Mensaje", k: "msg" }])); EthShell.toast("CSV descargado ⬇"); };
+      $("expSubs").onclick = async () => { const subs = await EthAdmin.listSubscribers(); if (!subs.length) { EthShell.toast("No hay suscriptores"); return; } download("suscriptores-ethos.csv", toCSV(subs.map((s) => ({ email: s.email, fecha: new Date(s.ts).toISOString().slice(0, 10) })), [{ h: "Email", k: "email" }, { h: "Fecha", k: "fecha" }])); EthShell.toast("CSV descargado ⬇"); };
 
       await Promise.all([renderOverview(), renderApps(), renderEvents(), renderResources(), renderPerks(), renderMembers(), renderGroups(), renderWeb(), renderSettings()]);
     })();
