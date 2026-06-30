@@ -458,6 +458,10 @@
 .att-chip:hover { border-color: var(--violet); color: var(--violet); }
 .att-chip .att { margin: 0; width: 24px; height: 24px; }
 
+/* ===== Foto de perfil (uploader) ===== */
+.avatar-edit { display: flex; align-items: center; gap: 18px; margin-bottom: 24px; flex-wrap: wrap; }
+.av-lg { width: 84px; height: 84px; font-size: 1.7rem; flex: none; }
+
 /* ===== Buscador del panel ===== */
 .admin-search { padding: 9px 14px; border: 1px solid var(--line); border-radius: 100px; background: var(--bg-card); font: inherit; font-size: 14px; min-width: 220px; max-width: 100%; }
 .admin-search:focus { outline: 0; border-color: var(--violet); }

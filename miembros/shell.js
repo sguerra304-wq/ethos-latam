@@ -54,7 +54,7 @@
          <nav class="side-nav">${navHtml}</nav>
          <div class="side-foot">
            <div class="user-card">
-             <span class="av">${user.initials || "ET"}</span>
+             <span class="av" ${this.avatarStyle(user.avatar)}>${user.initials || "ET"}</span>
              <div class="ui"><b>${user.name || "Founder"}</b><span>Plan ${user.plan || "Pro"}</span></div>
            </div>
            <button class="side-logout" id="ethLogout">${ICONS.logout} Cerrar sesión</button>
@@ -180,6 +180,11 @@
     fmtDate(iso) {
       const d = new Date(iso + "T00:00:00");
       return { day: d.getDate(), mon: ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"][d.getMonth()] };
+    },
+
+    /* Devuelve el atributo style para pintar un avatar como foto (o "" si no hay). */
+    avatarStyle(url) {
+      return url ? `style="background-image:url('${String(url).replace(/'/g, "%27")}');background-size:cover;background-position:center;color:transparent"` : "";
     },
 
     /* Presencia a partir de lastSeen (ms). <5min = en línea. */

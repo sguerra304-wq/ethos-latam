@@ -1,5 +1,6 @@
 // ETHOS LATAM — Auth API (email + contraseña, sesión por cookie JWT)
-import { readDB, writeDB, safeUser, hashPw, checkPw, signToken, sessionCookie, clearCookie, getSessionEmail, readJson, send, isOwner, OWNER_EMAIL } from "../lib/server.mjs";
+import { readDB, writeDB, safeUser, hashPw, checkPw, signToken, sessionCookie, clearCookie, getSessionEmail, readJson, send, isOwner, OWNER_EMAIL, uidFor } from "../lib/server.mjs";
+import { put } from "@vercel/blob";
 
 export default async function handler(req, res) {
   const q = new URL(req.url, "http://localhost").searchParams;
@@ -83,6 +84,26 @@ export default async function handler(req, res) {
       ["name", "company", "role", "sector", "city", "bio", "country", "linkedin", "instagram", "profession", "offers", "asks"].forEach((k) => {
         if (typeof body[k] === "string") user[k] = body[k].slice(0, 280);
       });
+      await writeDB(db);
+      return send(res, 200, { user: safeUser(user) });
+    }
+
+    if (action === "avatar") {
+      const sEmail = getSessionEmail(req);
+      if (!sEmail) return send(res, 401, { error: "No autenticado." });
+      const db = await readDB();
+      const user = db.users[sEmail];
+      if (!user) return send(res, 404, { error: "Usuario no encontrado." });
+      const m = String(body.dataUrl || "").match(/^data:(image\/(png|jpeg|webp));base64,(.+)$/);
+      if (!m) return send(res, 400, { error: "Imagen no válida." });
+      const buf = Buffer.from(m[3], "base64");
+      if (buf.length > 600 * 1024) return send(res, 413, { error: "La imagen es demasiado grande." });
+      const ext = m[2] === "jpeg" ? "jpg" : m[2];
+      const r = await put("avatars/" + uidFor(sEmail) + "-" + Date.now() + "." + ext, buf, {
+        access: "private", contentType: m[1], token: process.env.BLOB_READ_WRITE_TOKEN, addRandomSuffix: false
+      });
+      user.avatarBlob = r.url;                       // URL privada (se sirve vía proxy)
+      user.avatar = "/api/avatar?u=" + uidFor(sEmail); // URL pública estable para <img>
       await writeDB(db);
       return send(res, 200, { user: safeUser(user) });
     }

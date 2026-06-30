@@ -51,7 +51,7 @@
         return (group.members || []).map((m) => {
           const pr = EthShell.presence(m.lastSeen); const isMe = m.uid === myUid;
           return `<div class="mcard">
-            <div class="top"><span class="av${pr.online ? " on" : ""}">${esc(m.initials || "?")}</span>
+            <div class="top"><span class="av${pr.online ? " on" : ""}" ${EthShell.avatarStyle(m.avatar)}>${esc(m.initials || "?")}</span>
               <div><b>${esc(m.name)}${isMe ? ' <span class="tag lime" style="margin-left:4px">Tú</span>' : ""}</b>
                 <div class="rc">${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</div>
                 ${pr.label ? `<div class="pres ${pr.online ? "on" : ""}">${pr.label}</div>` : ""}</div></div>

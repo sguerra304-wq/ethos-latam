@@ -58,6 +58,15 @@
       } catch (e) { return { ok: false, error: "Error de conexión." }; }
     },
 
+    async uploadAvatar(dataUrl) {
+      try {
+        const r = await api("avatar", { method: "POST", body: JSON.stringify({ dataUrl }) });
+        const d = await r.json();
+        if (r.ok) { _userCache = d.user; return { ok: true, user: d.user }; }
+        return { ok: false, error: d.error };
+      } catch (e) { return { ok: false, error: "Error de conexión." }; }
+    },
+
     async signOut() {
       try { await api("logout", { method: "POST" }); } catch (e) {}
       _userCache = null;

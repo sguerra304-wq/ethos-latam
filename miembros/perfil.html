@@ -21,6 +21,14 @@
 
       <div class="panel" style="margin-bottom:20px">
         <form id="profForm">
+          <div class="avatar-edit">
+            <span class="av av-lg" id="avPreview">ET</span>
+            <div>
+              <button type="button" class="btn btn-ghost" id="avBtn">Cambiar foto</button>
+              <p class="muted" style="font-size:13px; margin-top:8px">JPG o PNG. Se recorta cuadrada y se optimiza automáticamente.</p>
+            </div>
+            <input type="file" id="avFile" accept="image/png,image/jpeg,image/webp" hidden>
+          </div>
           <div class="prof-grid">
             <div class="field"><label for="name">Nombre completo</label><input id="name" type="text"></div>
             <div class="field"><label for="company">Empresa / proyecto</label><input id="company" type="text" placeholder="Nombre de tu empresa"></div>
@@ -83,6 +91,32 @@
       if (user.country) { [...$("country").options].forEach((o) => { if (o.value === user.country) o.selected = true; }); }
       if (user.role) { [...$("role").options].forEach((o) => { if (o.value === user.role) o.selected = true; }); }
       $("planPill").textContent = "Plan " + (user.plan || "Pro");
+
+      // ---- Foto de perfil ----
+      const avPrev = $("avPreview");
+      const setPrev = (u) => {
+        if (u.avatar) { avPrev.style.backgroundImage = `url('${u.avatar}')`; avPrev.style.backgroundSize = "cover"; avPrev.style.backgroundPosition = "center"; avPrev.textContent = ""; }
+        else { avPrev.style.backgroundImage = ""; avPrev.textContent = u.initials || (u.name || "?").slice(0, 2).toUpperCase(); }
+      };
+      setPrev(user);
+      $("avBtn").onclick = () => $("avFile").click();
+      $("avFile").onchange = async (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        if (file.size > 8 * 1024 * 1024) { EthShell.toast("Imagen muy grande (máx 8MB)"); return; }
+        try {
+          const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+          const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = dataUrl; });
+          const S = 256, c = document.createElement("canvas"); c.width = S; c.height = S;
+          const ctx = c.getContext("2d");
+          const side = Math.min(img.width, img.height), sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, S, S);
+          const out = c.toDataURL("image/webp", 0.85);
+          EthShell.toast("Subiendo foto…");
+          const r = await EthAuth.uploadAvatar(out);
+          if (r.ok) { setPrev(r.user); EthShell.toast("Foto actualizada ✦"); } else { EthShell.toast(r.error || "No se pudo subir la foto"); }
+        } catch (err) { EthShell.toast("No se pudo procesar la imagen"); }
+        e.target.value = "";
+      };
 
       $("profForm").onsubmit = async (e) => {
         e.preventDefault();

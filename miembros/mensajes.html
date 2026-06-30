@@ -47,7 +47,7 @@
 
       function getConvo(uid) {
         let c = convos.find((x) => x.uid === uid);
-        if (!c) { const m = memByUid[uid]; if (!m) return null; c = { uid, name: m.name, initials: m.initials, role: m.role || "", company: m.company || "", lastSeen: m.lastSeen || 0, messages: [], unread: 0, lastTs: 0, lastText: "" }; }
+        if (!c) { const m = memByUid[uid]; if (!m) return null; c = { uid, name: m.name, initials: m.initials, avatar: m.avatar || "", role: m.role || "", company: m.company || "", lastSeen: m.lastSeen || 0, messages: [], unread: 0, lastTs: 0, lastText: "" }; }
         return c;
       }
 
@@ -57,7 +57,7 @@
         if (!rows.length) { listEl.innerHTML = '<div class="dm-empty">Aún no tienes conversaciones.<br>Empieza una desde el <a href="directorio.html" style="color:var(--violet)">Directorio</a>.</div>'; return; }
         listEl.innerHTML = rows.map((c) => `
           <div class="dm-conv ${c.uid === activeUid ? "on" : ""}" data-uid="${c.uid}">
-            <span class="av">${esc(c.initials || "?")}</span>
+            <span class="av" ${EthShell.avatarStyle(c.avatar)}>${esc(c.initials || "?")}</span>
             <div class="ci"><b>${esc(c.name)} ${c.unread ? `<span class="un">${c.unread}</span>` : ""}</b>
               <div class="dm-last">${esc(c.lastText || "Escribe el primer mensaje…")}</div></div>
             <time>${rel(c.lastTs)}</time>
@@ -70,7 +70,7 @@
         wrap.classList.add("viewing");
         threadEl.innerHTML = `
           <div class="dm-thead"><button class="back" id="dmBack" aria-label="Volver">‹</button>
-            <span class="av${EthShell.presence(c.lastSeen).online ? " on" : ""}">${esc(c.initials || "?")}</span>
+            <span class="av${EthShell.presence(c.lastSeen).online ? " on" : ""}" ${EthShell.avatarStyle(c.avatar)}>${esc(c.initials || "?")}</span>
             <div><b>${esc(c.name)}</b><span>${(() => { const pr = EthShell.presence(c.lastSeen); return pr.label ? `<i class="pres-dot ${pr.online ? "on" : ""}"></i>${esc(pr.label)}` : esc([c.role, c.company].filter(Boolean).join(" · ") || "Miembro"); })()}</span></div></div>
           <div class="dm-msgs" id="dmMsgs">${c.messages.length
             ? c.messages.map((m) => `<div class="bubble ${m.mine ? "me" : "them"}">${esc(m.text)}<time>${clock(m.ts)}</time></div>`).join("")

@@ -59,7 +59,7 @@
         );
         grid.innerHTML = rows.length ? rows.map((m) => `
           <div class="mcard" data-open="${m.uid}">
-            <div class="top"><span class="av${EthShell.presence(m.lastSeen).online ? " on" : ""}">${esc(m.initials || "?")}</span><div><b>${esc(m.name)}</b><div class="rc">${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</div>${(() => { const pr = EthShell.presence(m.lastSeen); return pr.label ? `<div class="pres ${pr.online ? "on" : ""}">${pr.label}</div>` : ""; })()}</div></div>
+            <div class="top"><span class="av${EthShell.presence(m.lastSeen).online ? " on" : ""}" ${EthShell.avatarStyle(m.avatar)}>${esc(m.initials || "?")}</span><div><b>${esc(m.name)}</b><div class="rc">${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</div>${(() => { const pr = EthShell.presence(m.lastSeen); return pr.label ? `<div class="pres ${pr.online ? "on" : ""}">${pr.label}</div>` : ""; })()}</div></div>
             <p class="bio">${esc(m.bio || "")}</p>
             <div class="tags"><span class="tag violet">${esc(m.sector || "—")}</span><span class="tag">${esc([m.city, m.country].filter(Boolean).join(", ") || "—")}</span><span class="tag lime">${esc(m.plan || "Pro")}</span></div>
             ${(m.offers || m.asks) ? `<div class="oa">${m.offers ? `<div class="oa-row"><span class="oa-tag offer">Ofrece</span><span>${esc(m.offers)}</span></div>` : ""}${m.asks ? `<div class="oa-row"><span class="oa-tag ask">Busca</span><span>${esc(m.asks)}</span></div>` : ""}</div>` : ""}
@@ -89,7 +89,7 @@
       }
       function openMember(m) {
         body.innerHTML = `<div class="member-detail">
-            <div class="top"><span class="av${EthShell.presence(m.lastSeen).online ? " on" : ""}">${esc(m.initials || "?")}</span><div><h3 style="margin:0">${esc(m.name)}</h3><div class="rc muted">${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</div>${(() => { const pr = EthShell.presence(m.lastSeen); return pr.label ? `<div class="pres ${pr.online ? "on" : ""}">${pr.label}</div>` : ""; })()}</div></div>
+            <div class="top"><span class="av${EthShell.presence(m.lastSeen).online ? " on" : ""}" ${EthShell.avatarStyle(m.avatar)}>${esc(m.initials || "?")}</span><div><h3 style="margin:0">${esc(m.name)}</h3><div class="rc muted">${esc(m.role || "")}${m.company ? " · " + esc(m.company) : ""}</div>${(() => { const pr = EthShell.presence(m.lastSeen); return pr.label ? `<div class="pres ${pr.online ? "on" : ""}">${pr.label}</div>` : ""; })()}</div></div>
             <div class="tags"><span class="tag violet">${esc(m.sector || "—")}</span><span class="tag">${esc([m.city, m.country].filter(Boolean).join(", ") || "—")}</span><span class="tag lime">Plan ${esc(m.plan || "Pro")}</span></div>
             <p class="bio">${esc(m.bio || "Sin bio todavía.")}</p>
             ${(m.offers || m.asks) ? `<div class="oa" style="margin:14px 0">${m.offers ? `<div class="oa-row"><span class="oa-tag offer">💡 Ofrece</span><span>${esc(m.offers)}</span></div>` : ""}${m.asks ? `<div class="oa-row"><span class="oa-tag ask">🙋 Busca</span><span>${esc(m.asks)}</span></div>` : ""}</div>` : ""}

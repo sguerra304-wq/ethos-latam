@@ -48,7 +48,7 @@ export default async function handler(req, res) {
           const lastRead = (c.read && c.read[myUid]) || 0;
           const last = msgs[msgs.length - 1];
           return {
-            uid: otherUid, name: ou.name || "Miembro", initials: initials(ou.name),
+            uid: otherUid, name: ou.name || "Miembro", initials: initials(ou.name), avatar: ou.avatar || "",
             role: ou.profession || ou.role || "", company: ou.company || "", lastSeen: ou.lastSeen || 0,
             messages: msgs.slice(-100).map((m) => ({ from: m.from, text: m.text, ts: m.ts, mine: m.from === myUid })),
             lastText: last ? last.text : "", lastTs: last ? last.ts : 0,
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       // Core Groups: el grupo del usuario (resuelto a datos públicos) + todos los grupos para el admin.
       const resolveMembers = (uids) => (uids || []).map((u) => {
         const ou = uidToUser[u]; if (!ou) return null;
-        return { uid: u, name: ou.name, initials: initials(ou.name), role: ou.profession || ou.role || "", company: ou.company || "", lastSeen: ou.lastSeen || 0 };
+        return { uid: u, name: ou.name, initials: initials(ou.name), role: ou.profession || ou.role || "", company: ou.company || "", lastSeen: ou.lastSeen || 0, avatar: ou.avatar || "" };
       }).filter(Boolean);
       const myGroupRaw = db.groups.find((grp) => (grp.memberUids || []).includes(myUid)) || null;
       const myGroup = myGroupRaw ? {
