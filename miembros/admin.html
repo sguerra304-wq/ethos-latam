@@ -96,6 +96,17 @@
             <textarea id="announcement" placeholder="Ej: ¡Plazas abiertas para el Ethos Summit! Reserva la tuya."></textarea>
             <p class="muted" style="font-size:13px; margin-top:8px">Se muestra como banner destacado en el inicio del área de miembros. Déjalo vacío para ocultarlo.</p>
           </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="spotSel">⭐ Miembro destacado de la semana</label>
+              <select id="spotSel"><option value="">— Ninguno —</option></select>
+            </div>
+            <div class="field">
+              <label for="spotText">Motivo del destacado (opcional)</label>
+              <input id="spotText" type="text" maxlength="120" placeholder="Ej: Cerró su ronda seed esta semana 🎉">
+            </div>
+          </div>
+          <p class="muted" style="font-size:13px; margin:-6px 0 16px">Aparece con banner ⭐ en el inicio de todos los miembros. Reconocer públicamente = retención.</p>
           <button class="btn btn-primary btn-lg" id="saveSettings">Guardar ajustes</button>
         </div>
       </section>
@@ -146,11 +157,14 @@
 
       /* ajustes */
       async function renderSettings() {
-        const s = await EthData.settings();
+        const [s, members] = await Promise.all([EthData.settings(), EthAdmin.listMembers()]);
         $("announcement").value = (s && s.announcement) || "";
+        $("spotSel").innerHTML = '<option value="">— Ninguno —</option>' +
+          members.map((m) => `<option value="${esc(m.uid)}" ${s && s.spotlightUid === m.uid ? "selected" : ""}>${esc(m.name)}${m.company ? " · " + esc(m.company) : ""}</option>`).join("");
+        $("spotText").value = (s && s.spotlightText) || "";
       }
       $("saveSettings").onclick = async () => {
-        const r = await EthData.saveSettings({ announcement: $("announcement").value.trim() });
+        const r = await EthData.saveSettings({ announcement: $("announcement").value.trim(), spotlightUid: $("spotSel").value, spotlightText: $("spotText").value.trim() });
         EthShell.toast(r.ok ? "Ajustes guardados ✦ Visible en el inicio de los miembros" : "No se pudo guardar");
       };
 

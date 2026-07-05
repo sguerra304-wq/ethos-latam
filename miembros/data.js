@@ -63,6 +63,11 @@
       return d;
     },
 
+    /* ----- gamificación + café + spotlight ----- */
+    async leaderboard() { const s = await ensure(); return { list: s.leaderboard || [], myRank: s.myRank || 0, myPoints: s.myPoints || 0 }; },
+    async coffee() { return (await ensure()).coffee || null; },
+    async spotlight() { return (await ensure()).spotlight || null; },
+
     /* ----- captación web (admin) ----- */
     async leads() { return (await ensure()).leads || []; },
     async subscribers() { return (await ensure()).subscribers || []; },

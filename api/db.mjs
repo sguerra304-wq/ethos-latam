@@ -76,6 +76,38 @@ export default async function handler(req, res) {
         (ids || []).forEach((id) => { (attByEvent[id] = attByEvent[id] || []).push({ uid: uidFor(em), name: u.name, initials: initials(u.name) }); });
       });
       const events = (db.events || []).map((e) => ({ ...e, rsvpCount: (attByEvent[e.id] || []).length, attendees: (attByEvent[e.id] || []).slice(0, 50) }));
+      // ---- Gamificación: puntos + leaderboard (calculado del uso real, sin estado extra) ----
+      const approvedUsers = Object.values(db.users).filter((u) => (u.status || "approved") === "approved");
+      const pointsFor = (u) => {
+        const mine = (db.posts || []).filter((p) => p.authorEmail === u.email);
+        let pts = mine.length * 10;
+        mine.forEach((p) => { pts += (p.likes || 0) * 3 + (p.comments || []).length * 2; });
+        pts += (db.rsvps[u.email] || []).length * 5;
+        if (u.avatarBlob) pts += 10;
+        if (u.offers) pts += 5; if (u.asks) pts += 5; if (u.bio) pts += 5;
+        return pts;
+      };
+      const ranked = approvedUsers.map((u) => ({ uid: uidFor(u.email), name: u.name, initials: initials(u.name), avatar: u.avatar || "", points: pointsFor(u) })).sort((a, b) => b.points - a.points);
+      const leaderboard = ranked.slice(0, 8);
+      const myRank = ranked.findIndex((x) => x.uid === myUid) + 1;
+      const myPoints = (ranked.find((x) => x.uid === myUid) || {}).points || 0;
+      // ---- Café de la semana: emparejado determinista que rota semanalmente (warm intros) ----
+      const week = Math.floor(Date.now() / 604800000);
+      let seed = week >>> 0;
+      const rnd = () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+      const pool = approvedUsers.map((u) => uidFor(u.email)).sort();
+      for (let i = pool.length - 1; i > 0; i--) { const k = Math.floor(rnd() * (i + 1)); [pool[i], pool[k]] = [pool[k], pool[i]]; }
+      let coffee = null;
+      const myPos = pool.indexOf(myUid);
+      if (myPos >= 0) {
+        const mate = myPos % 2 === 0 ? pool[myPos + 1] : pool[myPos - 1];
+        const mu = mate ? uidToUser[mate] : null;
+        if (mu) coffee = { uid: mate, name: mu.name, initials: initials(mu.name), avatar: mu.avatar || "", role: mu.profession || mu.role || "", company: mu.company || "", lastSeen: mu.lastSeen || 0 };
+      }
+      // ---- Miembro destacado (lo elige el admin en Ajustes) ----
+      let spotlight = null;
+      const spUid = (db.settings || {}).spotlightUid;
+      if (spUid && uidToUser[spUid]) { const sp = uidToUser[spUid]; spotlight = { uid: spUid, name: sp.name, initials: initials(sp.name), avatar: sp.avatar || "", role: sp.profession || sp.role || "", company: sp.company || "", text: (db.settings || {}).spotlightText || "" }; }
       const meSafe = safeUser(me); meSafe.isAdmin = isAdmin; meSafe.uid = myUid;
       return send(res, 200, {
         me: meSafe,
@@ -89,6 +121,7 @@ export default async function handler(req, res) {
         subscribers: isAdmin ? db.subscribers : [],
         myGroup,
         groups,
+        leaderboard, myRank, myPoints, coffee, spotlight,
         myDms,
         notifications,
         unreadNotifs: notifications.filter((n) => !n.read).length,

@@ -33,9 +33,11 @@
             <div class="ph"><h3>Próximos eventos</h3><a href="eventos.html">Todos →</a></div>
             <div class="ev-list" id="upcoming"></div>
           </div>
+          <div class="panel" id="lbPanel" hidden></div>
         </div>
 
         <div style="display:grid; gap:20px; align-content:start">
+          <div class="panel" id="coffeePanel" hidden></div>
           <div class="panel" id="onboarding">
             <div class="ph"><h3>Tu primer mes</h3><span class="muted" id="obPct" style="font-size:13px"></span></div>
             <div class="progress"><i id="obBar"></i></div>
@@ -76,12 +78,12 @@
       const today = new Date().toISOString().slice(0, 10);
       const upcoming = events.filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
       const attending = upcoming.filter((e) => rsvps.has(e.id));
-      const points = attending.length * 50 + (user.company ? 100 : 0) + Math.min(members.length, 50) * 2;
+      const lb = await EthData.leaderboard(); // puntos REALES (misma fuente que el leaderboard)
 
       $("wstats").innerHTML = [
         ["Plan " + (user.plan || "Pro"), "Tu membresía"],
         [attending.length, "Eventos confirmados"],
-        [points, "Puntos de comunidad"]
+        [lb.myPoints + (lb.myRank ? " pts · #" + lb.myRank : " pts"), "Puntos de comunidad"]
       ].map((s) => `<div class="wstat"><b>${s[0]}</b><span>${s[1]}</span></div>`).join("");
 
       const next = attending[0] || upcoming[0];
@@ -124,6 +126,36 @@
            <span class="fav">${esc(p.initials || "?")}</span>
            <div><p><b>${esc(p.author)}</b> ${esc((p.text || "").slice(0, 70))}${(p.text || "").length > 70 ? "…" : ""}</p><time>${esc(p.time || "")} · ${(p.likes || 0)} ♥</time></div>
          </a>`).join("") || '<p class="muted">Aún no hay publicaciones.</p>';
+
+      // ---- ⭐ Miembro destacado (lo elige el admin) ----
+      const spot = await EthData.spotlight();
+      if (spot) {
+        $("announce").insertAdjacentHTML("beforeend",
+          `<div class="spot-bar"><span class="av" ${EthShell.avatarStyle(spot.avatar)}>${esc(spot.initials)}</span>
+             <div><b>⭐ Miembro destacado: ${esc(spot.name)}</b><span class="sp-sub">${esc(spot.text || [spot.role, spot.company].filter(Boolean).join(" · "))}</span></div>
+             <a class="btn-xs" style="margin-left:auto" href="mensajes.html?u=${esc(spot.uid)}">Felicitar 🎉</a></div>`);
+      }
+
+      // ---- ☕ Café de la semana (emparejado que rota semanalmente) ----
+      const coffee = await EthData.coffee();
+      if (coffee) {
+        const cp = $("coffeePanel"); cp.hidden = false;
+        const pr = EthShell.presence(coffee.lastSeen);
+        cp.innerHTML = `<div class="ph"><h3>☕ Tu café de la semana</h3></div>
+          <div class="coffee-row"><span class="av${pr.online ? " on" : ""}" ${EthShell.avatarStyle(coffee.avatar)}>${esc(coffee.initials)}</span>
+            <div><b style="font-family:var(--font-display)">${esc(coffee.name)}</b><div class="muted" style="font-size:13px">${esc([coffee.role, coffee.company].filter(Boolean).join(" · ") || "Miembro")}</div></div></div>
+          <p class="muted" style="font-size:13.5px; margin:12px 0 14px">Cada semana te emparejamos con un founder distinto de la comunidad. Rompe el hielo y agenda 20 minutos.</p>
+          <a class="btn btn-primary btn-block" href="mensajes.html?u=${esc(coffee.uid)}">Saludar a ${esc((coffee.name || "").split(" ")[0])} →</a>`;
+      }
+
+      // ---- 🏆 Top founders (leaderboard real) ----
+      const meD = await EthData.me();
+      if ((lb.list || []).length > 1) {
+        const lp = $("lbPanel"); lp.hidden = false;
+        lp.innerHTML = `<div class="ph"><h3>🏆 Top founders</h3><span class="muted" style="font-size:13px">Tú: #${lb.myRank} · ${lb.myPoints} pts</span></div>` +
+          lb.list.map((r, i) => `<div class="lb-row${r.uid === meD.uid ? " me" : ""}"><span class="lb-pos">${i + 1}</span><span class="av" ${EthShell.avatarStyle(r.avatar)}>${esc(r.initials)}</span><b>${esc(r.name)}</b><span class="lb-pts">${r.points} pts</span></div>`).join("") +
+          `<p class="muted" style="font-size:12.5px; margin-top:12px">Suma puntos publicando, comentando, asistiendo a eventos y completando tu perfil.</p>`;
+      }
 
       $("app").addEventListener("click", async (ev) => {
         const btn = ev.target.closest(".btn-rsvp"); if (!btn) return;
