@@ -57,7 +57,7 @@
               <button class="fav-btn ${favs.includes(r.id) ? "on" : ""}" data-fav="${r.id}" title="Guardar">${star}</button></div>
             <h4>${esc(r.title)}</h4>
             <p>${esc(r.desc || "")}</p>
-            <button class="btn btn-ghost" data-t="${esc(r.title)}">Abrir recurso</button>
+            ${r.url ? `<a class="btn btn-ghost" href="${esc(r.url)}" target="_blank" rel="noopener">Abrir recurso ↗</a>` : `<button class="btn btn-ghost" data-t="${esc(r.title)}">Abrir recurso</button>`}
           </div>`).join("") : '<p class="muted">No hay recursos para esa búsqueda.</p>';
       }
       [q, fcat, ffav].forEach((el) => el.addEventListener("input", render));
@@ -72,7 +72,7 @@
           saveFavs(); render(); return;
         }
         const b = ev.target.closest("[data-t]");
-        if (b) EthShell.toast("Abriendo: " + b.dataset.t);
+        if (b) EthShell.toast("Este recurso aún no tiene enlace — el admin lo añadirá pronto.");
       });
     })();
   </script>

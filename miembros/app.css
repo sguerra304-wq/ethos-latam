@@ -458,6 +458,17 @@
 .att-chip:hover { border-color: var(--violet); color: var(--violet); }
 .att-chip .att { margin: 0; width: 24px; height: 24px; }
 
+/* ===== Canje de beneficios + selector de plan ===== */
+.code-box { display: flex; align-items: center; gap: 10px; }
+.code-box code { flex: 1; background: var(--bg-soft); border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; font-size: 15px; font-weight: 700; letter-spacing: .08em; font-family: var(--font-display); }
+.plan-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-card); font: inherit; transition: .2s; text-align: left; width: 100%; }
+.plan-opt b { font-family: var(--font-display); display: block; }
+.plan-opt .po-desc { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.plan-opt .po-price { font-family: var(--font-display); font-weight: 600; font-size: 13.5px; color: var(--violet); white-space: nowrap; flex: none; }
+.plan-opt:hover { border-color: var(--violet); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.plan-opt.on { border-color: rgba(184,242,48,.6); background: rgba(184,242,48,.08); }
+.plan-opt.on .po-price { color: var(--lime-deep); }
+
 /* ===== Café de la semana + leaderboard + spotlight ===== */
 .coffee-row { display: flex; align-items: center; gap: 13px; }
 .coffee-row .av { width: 48px; height: 48px; flex: none; }

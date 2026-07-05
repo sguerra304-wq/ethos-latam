@@ -29,6 +29,8 @@
     </main>
   </div>
 
+  <div class="modal" id="modal"><div class="modal-card"><div id="modalBody"></div></div></div>
+
   <script src="auth.js"></script>
   <script src="data.js"></script>
   <script src="shell.js"></script>
@@ -55,7 +57,7 @@
           <h4>${esc(p.title)}</h4>
           <p>${esc(p.desc)}</p>
           ${unlocked
-            ? `<button class="btn btn-primary" data-redeem="${esc(p.title)}">${esc(p.cta || "Canjear")}</button>`
+            ? `<button class="btn btn-primary" data-redeem="${esc(p.id)}">${esc(p.cta || "Canjear")}</button>`
             : `<div class="lock-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-linecap="round"/></svg> Sube a ${esc(p.plan)} para desbloquear</div>
                <a href="../planes.html#planes" class="btn btn-ghost" style="margin-top:10px">Ver planes</a>`}
         </div>`;
@@ -65,9 +67,24 @@
       $("unlockedCount").textContent = unlockedCount;
       $("savingSub").textContent = "Con tu plan " + (user.plan || "Pro") + " ya tienes acceso a estos beneficios:";
 
-      $("grid").addEventListener("click", (e) => {
+      const modal = $("modal"), mbody = $("modalBody");
+      modal.addEventListener("click", (e) => { if (e.target === modal || e.target.closest("[data-close]")) modal.classList.remove("on"); });
+
+      $("grid").addEventListener("click", async (e) => {
         const b = e.target.closest("[data-redeem]"); if (!b) return;
-        EthShell.toast("¡Beneficio activado! Te enviamos los detalles por email ✦");
+        b.disabled = true;
+        const r = await EthData.redeemPerk(b.dataset.redeem);
+        b.disabled = false;
+        if (!r.ok) { EthShell.toast(r.error || "No se pudo canjear."); return; }
+        mbody.innerHTML = `<h3 style="margin-bottom:4px">🎁 ${esc(r.title)}</h3>
+          <p class="muted" style="margin-bottom:20px">${esc(r.partner)} · Canje registrado ✅</p>
+          ${r.code ? `<div class="field"><label>Tu código promocional</label><div class="code-box"><code id="pkCode">${esc(r.code)}</code><button class="btn-xs" id="pkCopy">Copiar</button></div></div>` : ""}
+          ${r.url ? `<a class="btn btn-primary btn-block" style="margin-bottom:10px" href="${esc(r.url)}" target="_blank" rel="noopener">Ir al canje ↗</a>` : ""}
+          ${!r.code && !r.url ? '<p style="margin-bottom:16px">Registramos tu canje — el equipo te contactará con los pasos en menos de 24h.</p>' : ""}
+          <div class="modal-actions"><button class="btn btn-ghost" data-close>Cerrar</button></div>`;
+        modal.classList.add("on");
+        const cp = document.getElementById("pkCopy");
+        if (cp) cp.onclick = () => navigator.clipboard.writeText(r.code).then(() => EthShell.toast("Código copiado 📋"));
       });
     })();
   </script>

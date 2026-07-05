@@ -63,6 +63,10 @@
       return d;
     },
 
+    /* ----- canje de beneficios + plan ----- */
+    async redeemPerk(id) { return post("redeemPerk", { id }); },
+    async setMyPlan(plan) { const d = await post("setMyPlan", { plan }); await refresh(); return d; },
+
     /* ----- gamificación + café + spotlight ----- */
     async leaderboard() { const s = await ensure(); return { list: s.leaderboard || [], myRank: s.myRank || 0, myPoints: s.myPoints || 0 }; },
     async coffee() { return (await ensure()).coffee || null; },

@@ -216,7 +216,7 @@
         const list = await EthAdmin.listPerks();
         $("perksList").innerHTML = list.length ? list.map((p) => `
           <div class="admin-row">
-            <div class="ri"><h4>${esc(p.title)}</h4><div class="meta"><span>${esc(p.partner)}</span><span>·</span><span>${esc(p.value)}</span><span>·</span><span>Plan ${esc(p.plan)}+</span></div></div>
+            <div class="ri"><h4>${esc(p.title)}</h4><div class="meta"><span>${esc(p.partner)}</span><span>·</span><span>${esc(p.value)}</span><span>·</span><span>Plan ${esc(p.plan)}+</span><span>·</span><span>🎁 ${p.redeems || 0} canjes</span>${p.url || p.code ? "" : '<span>·</span><span style="color:var(--coral)">sin código/enlace</span>'}</div></div>
             <div class="ra"><button class="btn-xs" data-edit-pk="${p.id}">Editar</button><button class="btn-xs danger" data-del-pk="${p.id}">Borrar</button></div>
           </div>`).join("") : '<p class="muted">No hay beneficios.</p>';
       }
@@ -322,6 +322,7 @@
             <div class="field"><label>Categoría</label><input name="cat" value="${esc(r.cat || "")}" required></div>
             <div class="field"><label>Tipo</label><input name="type" value="${esc(r.type || "Guía")}"></div>
           </div>
+          <div class="field"><label>Enlace (URL del recurso)</label><input name="url" value="${esc(r.url || "")}" placeholder="https://docs.google.com/… o Notion, Drive, PDF"></div>
           <div class="field"><label>Descripción</label><textarea name="desc">${esc(r.desc || "")}</textarea></div>
           <div class="modal-actions"><button type="button" class="btn btn-ghost" id="mCancel">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>`;
       }
@@ -339,6 +340,11 @@
             <div class="field"><label>Plan mínimo</label><select name="plan">${sel(["Starter", "Pro", "Elite"], p.plan || "Pro")}</select></div>
             <div class="field"><label>Texto del botón</label><input name="cta" value="${esc(p.cta || "Canjear")}"></div>
           </div>
+          <div class="field-row">
+            <div class="field"><label>Enlace de canje (URL)</label><input name="url" value="${esc(p.url || "")}" placeholder="https://partner.com/startups"></div>
+            <div class="field"><label>Código promocional</label><input name="code" value="${esc(p.code || "")}" placeholder="ETHOS2026"></div>
+          </div>
+          <p class="muted" style="font-size:12.5px; margin:-8px 0 14px">El miembro recibe el código y el enlace al pulsar "Canjear" (y a ti te llega una notificación del canje).</p>
           <div class="field"><label>Descripción</label><textarea name="desc">${esc(p.desc || "")}</textarea></div>
           <div class="modal-actions"><button type="button" class="btn btn-ghost" id="mCancel">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>`;
       }

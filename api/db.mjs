@@ -114,7 +114,8 @@ export default async function handler(req, res) {
         channels: db.channels || [],
         posts,
         events,
-        perks: db.perks || [],
+        // code/url de canje solo se entregan al canjear (o al admin para editarlos)
+        perks: isAdmin ? (db.perks || []) : (db.perks || []).map((p) => { const { code, url, ...rest } = p; return { ...rest, hasCode: !!code, hasLink: !!url }; }),
         resources: db.resources || [],
         members,
         leads: isAdmin ? db.leads : [],
@@ -213,6 +214,25 @@ export default async function handler(req, res) {
         await writeDB(db); return send(res, 200, { ok: true, id: p.id });
       }
       case "deletePerk": { if (!needAdmin()) return; db.perks = db.perks.filter((x) => x.id !== body.id); await writeDB(db); return send(res, 200, { ok: true }); }
+      /* ----- canje real de beneficios (miembro) ----- */
+      case "redeemPerk": {
+        const p = (db.perks || []).find((x) => x.id === body.id);
+        if (!p) return send(res, 404, { error: "Beneficio no encontrado." });
+        const RANK = { Starter: 1, Pro: 2, Elite: 3 };
+        if ((RANK[me.plan] || 1) < (RANK[p.plan] || 1)) return send(res, 403, { error: "Tu plan no incluye este beneficio." });
+        p.redeems = (p.redeems || 0) + 1;
+        Object.keys(db.users).forEach((e) => { const u = db.users[e]; if ((u.isAdmin || isOwner(e)) && e !== email) pushNotif(db, e, { type: "perk", text: `🎁 ${me.name} canjeó "${p.title}" (${p.partner})`, href: "admin.html" }); });
+        await writeDB(db);
+        return send(res, 200, { ok: true, code: p.code || "", url: p.url || "", partner: p.partner, title: p.title });
+      }
+      /* ----- cambio de plan self-serve ----- */
+      case "setMyPlan": {
+        const plan = ["Starter", "Pro", "Elite"].includes(body.plan) ? body.plan : null;
+        if (!plan) return send(res, 400, { error: "Plan no válido." });
+        me.plan = plan;
+        await writeDB(db);
+        return send(res, 200, { ok: true, plan });
+      }
       /* ----- admin: solicitudes ----- */
       case "approveApp": { if (!needAdmin()) return; const u = db.users[body.id]; if (u) { u.status = "approved"; pushNotif(db, body.id, { type: "approval", text: "✅ ¡Tu solicitud fue aprobada! Bienvenido a Ethos LATAM.", href: "index.html" }); } await writeDB(db); return send(res, 200, { ok: true }); }
       case "rejectApp": { if (!needAdmin()) return; const u = db.users[body.id]; if (u) u.status = "rejected"; await writeDB(db); return send(res, 200, { ok: true }); }
