@@ -1,6 +1,7 @@
 // ETHOS LATAM — Auth API (email + contraseña, sesión por cookie JWT)
 import { readDB, writeDB, safeUser, hashPw, checkPw, signToken, sessionCookie, clearCookie, getSessionEmail, readJson, send, isOwner, OWNER_EMAIL, uidFor } from "../lib/server.mjs";
 import { put } from "@vercel/blob";
+import { sendEmail, emailWrap } from "../lib/email.mjs";
 
 export default async function handler(req, res) {
   const q = new URL(req.url, "http://localhost").searchParams;
@@ -56,6 +57,15 @@ export default async function handler(req, res) {
         res.setHeader("Set-Cookie", sessionCookie(signToken(email)));
         return send(res, 200, { user: safeUser(user) });
       }
+      // Emails (no-op si no hay RESEND_API_KEY): confirmación al aplicante + aviso al owner.
+      await sendEmail(email, "Recibimos tu solicitud — Ethos LATAM",
+        emailWrap("¡Gracias por aplicar, " + (user.name.split(" ")[0]) + "!",
+          "Recibimos tu solicitud para entrar a <b>Ethos LATAM</b>. Revisamos cada perfil con atención para cuidar la calidad de la comunidad. Te escribiremos en 48–72h con la decisión.",
+          { url: "https://ethoslatam.com", label: "Conocer más" }));
+      if (OWNER_EMAIL) await sendEmail(OWNER_EMAIL, "Nueva solicitud: " + user.name,
+        emailWrap("Nueva solicitud de ingreso",
+          `<b>${user.name}</b> (${email})<br>${user.profession || ""} · ${user.company || "—"} · ${user.city || ""}, ${user.country || ""}`,
+          { url: "https://ethoslatam.com/miembros/admin", label: "Revisar en el panel" }));
       return send(res, 200, { pending: true });
     }
 
@@ -97,6 +107,8 @@ export default async function handler(req, res) {
       if (!user || !(await checkPw(body.current || "", user.passHash))) return send(res, 401, { error: "La contraseña actual no es correcta." });
       user.passHash = await hashPw(body.next);
       await writeDB(db);
+      await sendEmail(sEmail, "Tu contraseña se actualizó — Ethos LATAM",
+        emailWrap("Contraseña actualizada", "Acabas de cambiar la contraseña de tu cuenta de Ethos LATAM. Si no fuiste tú, escríbenos de inmediato a hola@ethoslatam.com.", null));
       return send(res, 200, { ok: true });
     }
 

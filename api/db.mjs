@@ -1,5 +1,6 @@
 // ETHOS LATAM — Data API (datos compartidos en Vercel Blob)
 import { readDB, writeDB, safeUser, getSessionEmail, readJson, send, initials, isOwner, uidFor, pushNotif } from "../lib/server.mjs";
+import { sendEmail, emailWrap } from "../lib/email.mjs";
 
 const rid = (p) => p + "_" + Math.random().toString(36).slice(2, 10);
 
@@ -234,7 +235,21 @@ export default async function handler(req, res) {
         return send(res, 200, { ok: true, plan });
       }
       /* ----- admin: solicitudes ----- */
-      case "approveApp": { if (!needAdmin()) return; const u = db.users[body.id]; if (u) { u.status = "approved"; pushNotif(db, body.id, { type: "approval", text: "✅ ¡Tu solicitud fue aprobada! Bienvenido a Ethos LATAM.", href: "index.html" }); } await writeDB(db); return send(res, 200, { ok: true }); }
+      case "approveApp": {
+        if (!needAdmin()) return;
+        const u = db.users[body.id];
+        if (u) {
+          u.status = "approved";
+          pushNotif(db, body.id, { type: "approval", text: "✅ ¡Tu solicitud fue aprobada! Bienvenido a Ethos LATAM.", href: "index.html" });
+          await writeDB(db);
+          await sendEmail(body.id, "¡Bienvenido a Ethos LATAM! 🎉",
+            emailWrap("Tu solicitud fue aprobada, " + ((u.name || "").split(" ")[0]) + " 🎉",
+              "Ya eres parte de <b>Ethos LATAM</b>. Entra a la plataforma para completar tu perfil, unirte a tu Core Group, reservar eventos y conocer a la comunidad.",
+              { url: "https://ethoslatam.com/miembros/login", label: "Entrar a la plataforma" }));
+          return send(res, 200, { ok: true });
+        }
+        await writeDB(db); return send(res, 200, { ok: true });
+      }
       case "rejectApp": { if (!needAdmin()) return; const u = db.users[body.id]; if (u) u.status = "rejected"; await writeDB(db); return send(res, 200, { ok: true }); }
       /* ----- admin: miembros ----- */
       case "updateMember": { if (!needAdmin()) return; const u = db.users[body.email]; if (u) Object.assign(u, body.patch || {}); await writeDB(db); return send(res, 200, { ok: true }); }
