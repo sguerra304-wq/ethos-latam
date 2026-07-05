@@ -284,6 +284,8 @@ export default async function handler(req, res) {
         await writeDB(db); return send(res, 200, { ok: true, id: grp.id });
       }
       case "deleteGroup": { if (!needAdmin()) return; db.groups = (db.groups || []).filter((x) => x.id !== body.id); await writeDB(db); return send(res, 200, { ok: true }); }
+      /* ----- admin: backup completo de la base de datos ----- */
+      case "exportDB": { if (!needAdmin()) return; return send(res, 200, { db, exportedAt: Date.now() }); }
       /* ----- admin: captación web (leads + suscriptores) ----- */
       case "deleteLead": { if (!needAdmin()) return; db.leads = (db.leads || []).filter((x) => x.id !== body.id); await writeDB(db); return send(res, 200, { ok: true }); }
       case "deleteSubscriber": { if (!needAdmin()) return; db.subscribers = (db.subscribers || []).filter((x) => x.email !== body.email); await writeDB(db); return send(res, 200, { ok: true }); }
