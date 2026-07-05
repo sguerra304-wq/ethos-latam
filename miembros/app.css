@@ -32,6 +32,11 @@
 
 /* ---------- App shell ---------- */
 .app { min-height: 100vh; display: grid; grid-template-columns: 264px 1fr; background: var(--bg-soft); }
+/* Carga limpia: ocultar todo hasta que el shell esté montado (evita el salto de layout) */
+.app:not(.ready) { position: relative; }
+.app:not(.ready) > * { visibility: hidden; }
+.app:not(.ready)::after { content: ""; position: absolute; top: 50%; left: 50%; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--violet); animation: ethspin .7s linear infinite; }
+@keyframes ethspin { to { transform: rotate(360deg); } }
 .sidebar { position: sticky; top: 0; height: 100vh; background: var(--bg-card); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 22px 18px; }
 .sidebar .brand { padding: 6px 8px 22px; }
 .side-nav { display: grid; gap: 4px; }
@@ -333,6 +338,10 @@
 .ov-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .ov-actions button { padding: 11px 18px; border-radius: 100px; font-family: var(--font-display); font-weight: 600; font-size: 14px; border: 1px solid var(--line); background: #fff; transition: .2s; }
 .ov-actions button:hover { border-color: var(--ink); transform: translateY(-2px); }
+.act-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line-soft); font-size: 14px; color: var(--ink-soft); }
+.act-row:first-child { border-top: 0; }
+.act-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.act-row time { color: var(--muted-2); font-size: 12.5px; flex: none; }
 @media (max-width: 760px) { .ov-grid { grid-template-columns: 1fr 1fr; } }
 
 /* ===== Premium FX (miembros) ===== */

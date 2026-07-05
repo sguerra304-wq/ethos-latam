@@ -65,6 +65,17 @@
         </div>
         <p class="muted" id="billNote" style="font-size:13px; margin-top:16px"></p>
       </div>
+
+      <div class="panel" style="margin-top:20px">
+        <h3 style="margin-bottom:16px">🔒 Seguridad</h3>
+        <form id="pwForm">
+          <div class="prof-grid">
+            <div class="field"><label for="pwCur">Contraseña actual</label><input id="pwCur" type="password" autocomplete="current-password" required></div>
+            <div class="field"><label for="pwNew">Nueva contraseña (mín. 6)</label><input id="pwNew" type="password" autocomplete="new-password" minlength="6" required></div>
+          </div>
+          <button type="submit" class="btn btn-ghost">Cambiar contraseña</button>
+        </form>
+      </div>
     </main>
   </div>
 
@@ -123,6 +134,13 @@
         const patch = { name: $("name").value.trim(), company: $("company").value.trim(), role: $("role").value, sector: $("sector").value.trim(), city: $("city").value.trim(), country: $("country").value, linkedin: $("linkedin").value.trim(), instagram: $("instagram").value.trim(), bio: $("bio").value.trim(), offers: $("offers").value.trim(), asks: $("asks").value.trim() };
         const r = await EthAuth.updateProfile(patch);
         EthShell.toast(r.ok ? "Perfil guardado ✦" : "No se pudo guardar.");
+      };
+
+      $("pwForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const r = await EthAuth.changePassword($("pwCur").value, $("pwNew").value);
+        if (r.ok) { $("pwCur").value = ""; $("pwNew").value = ""; EthShell.toast("Contraseña actualizada 🔒"); }
+        else EthShell.toast(r.error || "No se pudo cambiar la contraseña.");
       };
 
       $("btnPortal").onclick = () => EthBilling.portal();

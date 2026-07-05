@@ -88,6 +88,18 @@ export default async function handler(req, res) {
       return send(res, 200, { user: safeUser(user) });
     }
 
+    if (action === "changePassword") {
+      const sEmail = getSessionEmail(req);
+      if (!sEmail) return send(res, 401, { error: "No autenticado." });
+      if (!body.next || body.next.length < 6) return send(res, 400, { error: "La nueva contraseña debe tener al menos 6 caracteres." });
+      const db = await readDB();
+      const user = db.users[sEmail];
+      if (!user || !(await checkPw(body.current || "", user.passHash))) return send(res, 401, { error: "La contraseña actual no es correcta." });
+      user.passHash = await hashPw(body.next);
+      await writeDB(db);
+      return send(res, 200, { ok: true });
+    }
+
     if (action === "avatar") {
       const sEmail = getSessionEmail(req);
       if (!sEmail) return send(res, 401, { error: "No autenticado." });

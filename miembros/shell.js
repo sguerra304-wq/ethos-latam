@@ -101,6 +101,7 @@
 
       this._wireHeader(snap);
       this._fx(app);
+      app.classList.add("ready"); // shell montado → mostrar todo de golpe (sin saltos de layout)
       return user;
     },
 

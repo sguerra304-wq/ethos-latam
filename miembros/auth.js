@@ -58,6 +58,14 @@
       } catch (e) { return { ok: false, error: "Error de conexión." }; }
     },
 
+    async changePassword(current, next) {
+      try {
+        const r = await api("changePassword", { method: "POST", body: JSON.stringify({ current, next }) });
+        const d = await r.json();
+        return r.ok ? { ok: true } : { ok: false, error: d.error };
+      } catch (e) { return { ok: false, error: "Error de conexión." }; }
+    },
+
     async uploadAvatar(dataUrl) {
       try {
         const r = await api("avatar", { method: "POST", body: JSON.stringify({ dataUrl }) });

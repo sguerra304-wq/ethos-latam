@@ -138,6 +138,17 @@
     }, { passive: true });
   }
 
+  /* CTA móvil pegajoso en la landing (aparece tras pasar el hero) */
+  if (document.querySelector("section.hero")) {
+    const m = document.createElement("div");
+    m.className = "mcta";
+    m.innerHTML = '<a href="contacto.html" class="btn btn-lime btn-lg">Aplicar al club →</a>';
+    document.body.appendChild(m);
+    const onMcta = () => m.classList.toggle("show", window.scrollY > 560);
+    window.addEventListener("scroll", onMcta, { passive: true });
+    onMcta();
+  }
+
   /* Newsletter (.news) → backend real (api/public) */
   document.querySelectorAll("form.news").forEach((f) => {
     f.addEventListener("submit", async (e) => {

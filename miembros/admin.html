@@ -47,6 +47,10 @@
             <button data-go="settings">⚙️ Editar anuncio</button>
           </div>
         </div>
+        <div class="panel" style="margin-top:14px">
+          <div class="ph"><h3>Actividad reciente</h3></div>
+          <div id="ovActivity"></div>
+        </div>
       </section>
 
       <section class="admin-sec" id="sec-apps">
@@ -153,6 +157,14 @@
           { n: perks.length, l: "Beneficios" }
         ];
         $("ovGrid").innerHTML = cards.map((c) => `<div class="ov-card ${c.alert ? "alert" : ""}"><div class="n">${c.n}</div><div class="l">${c.l}</div></div>`).join("");
+
+        // Actividad reciente (nuevos miembros + publicaciones + solicitudes web)
+        const act = [];
+        members.forEach((m) => { if (m.createdAt) act.push({ ts: m.createdAt, t: "🆕 " + m.name + " se unió a la comunidad" }); });
+        posts.slice(0, 10).forEach((p) => { if (p.ts) act.push({ ts: p.ts, t: "💬 " + p.author + ": " + (p.text || "").slice(0, 48) + ((p.text || "").length > 48 ? "…" : "") }); });
+        leads.forEach((l) => { if (l.ts) act.push({ ts: l.ts, t: "🌐 " + l.name + " aplicó desde la web" }); });
+        act.sort((a, b) => b.ts - a.ts);
+        $("ovActivity").innerHTML = act.slice(0, 8).map((a) => `<div class="act-row"><span>${esc(a.t)}</span><time>${EthShell.relTime(a.ts)}</time></div>`).join("") || '<p class="muted">Aún no hay actividad.</p>';
       }
 
       /* ajustes */
