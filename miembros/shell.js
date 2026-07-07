@@ -28,7 +28,7 @@
     { key: "beneficios", href: "beneficios.html", label: "Beneficios" },
     { key: "perfil", href: "perfil.html", label: "Perfil" }
   ];
-  const BRAND = '<a href="index.html" class="brand"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="ethmk" x1="10" y1="54" x2="54" y2="14" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#C7FB4F"/><stop offset="1" stop-color="#7B5CFF"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="#0E1014"/><path d="M32 13 L53 53 L11 53 Z" fill="none" stroke="url(#ethmk)" stroke-width="6" stroke-linejoin="round"/><path d="M21.5 42 L42.5 42" fill="none" stroke="url(#ethmk)" stroke-width="6" stroke-linecap="round"/></svg>Ethos <b>LATAM</b></a>';
+  const BRAND = '<a href="index.html" class="brand"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="ethmk" x1="9" y1="34" x2="55" y2="30" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#C7FB4F"/><stop offset="1" stop-color="#7B5CFF"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="#0E1014"/><path d="M32 15 L53 54 L11 54 Z" fill="none" stroke="url(#ethmk)" stroke-width="5.5" stroke-linejoin="round"/><path d="M32 8 L39.5 23 L35 23 L35 47 L29 47 L29 23 L24.5 23 Z" fill="url(#ethmk)"/></svg>Ethos <b>LATAM</b></a>';
 
   window.EthShell = {
     async mount(active) {
