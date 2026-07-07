@@ -463,14 +463,15 @@ h3 { font-size: clamp(1.3rem, 2.2vw, 1.7rem); }
 .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
 
 /* ---------- Page hero (inner pages) ---------- */
-.page-hero { padding-top: 150px; padding-bottom: 60px; text-align:center; overflow:hidden; }
+.page-hero { padding-top: 150px; padding-bottom: 60px; text-align:center; overflow:hidden; width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); padding-inline: 24px; }
 .page-hero::before { content:""; position:absolute; inset:0; background:var(--grad-hero); z-index:-1; }
 .page-hero h1 { margin:20px auto 18px; max-width:16ch; }
 .page-hero .lead { max-width:620px; margin-inline:auto; }
 
 /* ---------- Banner image (inner pages) ---------- */
-.banner { margin-top: 10px; }
-.banner .media-frame { aspect-ratio: 21/8; }
+/* Banner a pantalla completa (full-bleed) — rompe el ancho máximo del .wrap */
+.banner { margin-top: 10px; width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); padding-inline: 0; }
+.banner .media-frame { aspect-ratio: 24/7; border-radius: 0; border-left: 0; border-right: 0; box-shadow: none; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 980px) {
