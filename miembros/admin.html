@@ -157,13 +157,15 @@
       /* resumen */
       async function renderOverview() {
         const [members, apps, events, posts, perks, leads] = await Promise.all([EthData.members(), EthData.applications(), EthData.events(), EthData.posts(), EthData.perks(), EthData.leads()]);
+        const pend = apps.filter((a) => a.status === "pending").length;
+        const cobros = apps.filter((a) => a.status === "payment").length;
         const cards = [
-          { n: apps.length, l: "Solicitudes pendientes", alert: apps.length > 0 },
+          { n: pend, l: "Solicitudes pendientes", alert: pend > 0 },
+          { n: cobros, l: "💳 Esperando pago", alert: cobros > 0 },
           { n: leads.length, l: "Solicitudes web", alert: leads.length > 0 },
           { n: members.length, l: "Miembros activos" },
           { n: events.length, l: "Eventos" },
-          { n: posts.length, l: "Publicaciones" },
-          { n: perks.length, l: "Beneficios" }
+          { n: posts.length, l: "Publicaciones" }
         ];
         $("ovGrid").innerHTML = cards.map((c) => `<div class="ov-card ${c.alert ? "alert" : ""}"><div class="n">${c.n}</div><div class="l">${c.l}</div></div>`).join("");
 

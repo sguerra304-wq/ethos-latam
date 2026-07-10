@@ -4,7 +4,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://ethoslatam.com/</loc>
-    <lastmod>2026-07-05</lastmod>
+    <lastmod>2026-07-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://ethoslatam.com/"/>
@@ -24,11 +24,11 @@
     <image:image><image:loc>https://ethoslatam.com/assets/img/mastermind.webp</image:loc><image:title>Masterminds y eventos de Ethos LATAM</image:title></image:image>
   </url>
   <url>
-    <loc>https://ethoslatam.com/planes</loc><lastmod>2026-07-05</lastmod><changefreq>monthly</changefreq><priority>0.9</priority>
+    <loc>https://ethoslatam.com/planes</loc><lastmod>2026-07-10</lastmod><changefreq>monthly</changefreq><priority>0.9</priority>
     <image:image><image:loc>https://ethoslatam.com/assets/img/coworking.webp</image:loc><image:title>Planes y membresías de Ethos LATAM</image:title></image:image>
   </url>
   <url>
-    <loc>https://ethoslatam.com/contacto</loc><lastmod>2026-07-05</lastmod><changefreq>monthly</changefreq><priority>0.7</priority>
+    <loc>https://ethoslatam.com/contacto</loc><lastmod>2026-07-10</lastmod><changefreq>monthly</changefreq><priority>0.7</priority>
     <image:image><image:loc>https://ethoslatam.com/assets/img/emotion-connection.webp</image:loc><image:title>Aplica al club Ethos LATAM</image:title></image:image>
   </url>
   <url><loc>https://ethoslatam.com/club-de-founders-cdmx</loc><lastmod>2026-07-07</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>

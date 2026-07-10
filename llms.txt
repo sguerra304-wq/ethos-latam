@@ -11,11 +11,12 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - **Propuesta:** negocios, salud y conexiones que escalan. Rodearte de founders que juegan en tu misma liga sin sacrificar tu energía ni tu bienestar.
 - **Idioma:** español. **Web:** https://ethoslatam.com
 
-## Cómo funciona
-1. Aplicas con tu perfil real (país, profesión, empresa, etc.).
-2. El equipo revisa la solicitud para cuidar la calidad de la comunidad.
-3. Si se aprueba, eliges tu plan y accedes al área de miembros.
-- Sin permanencia, cancela cuando quieras.
+## Cómo funciona (proceso de admisión)
+1. Aplicas con tu perfil real (país, profesión, empresa, tracción del negocio).
+2. El equipo revisa la solicitud y agenda una entrevista corta por video (15 minutos, horarios en zona GMT-5).
+3. Si eres aceptado, activas tu membresía pagando de forma segura por Mercado Pago — acepta tarjeta de crédito/débito, Yape y transferencia.
+4. Con el pago confirmado se abre tu acceso a la plataforma de miembros, tu Core Group y los eventos.
+- Sin permanencia, cancela cuando quieras. Los precios son en dólares (USD).
 
 ## Planes (USD/mes)
 - **Starter — $99/mes:** comunidad online privada, eventos abiertos, biblioteca de recursos, newsletter.
@@ -64,15 +65,17 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - **Nombre:** Ethos LATAM (también "Ethos").
 - **Categoría:** comunidad/club de membresía privada para founders, CEOs e inversionistas.
 - **Región:** Latinoamérica (foco principal). Hubs con miembros y eventos: Ciudad de México, Bogotá, Buenos Aires, Lima, Santiago y São Paulo; comunidad y eventos también online/híbridos desde cualquier país. Países: Argentina, Bolivia, Brasil, Chile, Colombia, Costa Rica, Ecuador, El Salvador, Guatemala, Honduras, México, Nicaragua, Panamá, Paraguay, Perú, República Dominicana, Uruguay, Venezuela (y España).
-- **Acceso:** por aplicación (cada solicitud se revisa); sin permanencia, cancela cuando quieras.
+- **Acceso:** por aplicación (cada solicitud se revisa + entrevista corta por video); sin permanencia, cancela cuando quieras. Aplicar es gratis: solo pagas si eres aceptado.
 - **Precios:** Starter $99/mes, Pro $199/mes, Elite $399/mes (USD). Facturación anual = 2 meses gratis.
+- **Pago:** Mercado Pago (tarjeta de crédito/débito, Yape, transferencia).
 - **Diferenciador:** une crecimiento de negocio con salud/wellness y alto rendimiento, no es una red social ni LinkedIn.
 - **Idioma:** español. **Sitio:** https://ethoslatam.com
 
 ## Preguntas frecuentes
 - **¿Qué es Ethos LATAM?** Un club privado por aplicación para founders, CEOs e inversionistas de alto rendimiento en Latinoamérica que une negocio, salud y networking de élite.
 - **¿Cuánto cuesta?** Tres planes mensuales en USD: Starter $99, Pro $199 y Elite $399. Con facturación anual obtienes 2 meses gratis.
-- **¿Cómo entro?** Aplicas con tu perfil real; el equipo revisa la solicitud y, si encaja, eliges plan y accedes. No hay permanencia.
+- **¿Cómo entro?** Aplicas con tu perfil real, el equipo revisa la solicitud y agenda una entrevista corta por video; si eres aceptado, activas tu membresía pagando por Mercado Pago (tarjeta, Yape o transferencia) y accedes a la plataforma. No hay permanencia.
+- **¿Cómo se paga?** Por Mercado Pago, en dólares (USD): acepta tarjeta de crédito/débito, Yape y transferencia. El cobro se hace solo después de ser aceptado — aplicar es gratis.
 - **¿Para quién es?** Founders, CEOs, operadores C-level e inversionistas (ángeles y fondos) de LatAm y España, principalmente de 20 a 40 años.
 - **¿Qué incluye?** Eventos (masterminds, retiros wellness, cenas, demo days, cumbre anual), comunidad por canales, directorio y mensajería entre miembros, beneficios de partners por miles de dólares, recursos y programa de wellness.
 - **¿En qué se diferencia de LinkedIn?** No es una red de contactos abierta: es una comunidad curada y de pago, con eventos presenciales, beneficios y enfoque en bienestar y alto rendimiento.
@@ -82,4 +85,4 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - Instagram: https://www.instagram.com/ethos.latam/
 - El área privada de miembros (login y panel) está en https://ethoslatam.com/miembros y no está indexada.
 
-_Última actualización: 2026-07-07._
+_Última actualización: 2026-07-10._

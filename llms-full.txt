@@ -12,10 +12,11 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - **Idioma:** español. **Web:** https://ethoslatam.com
 
 ## Cómo funciona
-1. Aplicas con tu perfil real (país, profesión, empresa, etc.).
-2. El equipo revisa la solicitud para cuidar la calidad de la comunidad.
-3. Si se aprueba, eliges tu plan y accedes al área de miembros.
-- Sin permanencia, cancela cuando quieras.
+1. Aplicas con tu perfil real (país, profesión, empresa, tracción del negocio).
+2. El equipo revisa la solicitud y agenda una entrevista corta por video.
+3. Si eres aceptado, activas tu membresía pagando por Mercado Pago (tarjeta, Yape o transferencia, en USD).
+4. Con el pago confirmado accedes al área de miembros, tu Core Group y los eventos.
+- Sin permanencia, cancela cuando quieras. Aplicar es gratis: solo pagas si eres aceptado.
 
 ## Planes (USD/mes)
 - **Starter — $99/mes:** comunidad online privada, eventos abiertos, biblioteca de recursos, newsletter.
@@ -77,7 +78,7 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - Email: hola@ethoslatam.com
 - El área privada de miembros (login y panel) está en https://ethoslatam.com/miembros y no está indexada.
 
-_Última actualización: 2026-07-07._
+_Última actualización: 2026-07-10._
 
 
 # ====== CONTENIDO COMPLETO (llms-full) ======
@@ -109,7 +110,7 @@ Un club de founders (o club de fundadores) es una comunidad privada y curada de 
 - Facturación anual: 2 meses gratis. Sin permanencia. Garantía 30 días.
 
 ## Proceso de admisión
-1) Aplicas con tu perfil real (incluye la tracción del negocio: es parte del filtro). 2) El equipo revisa cada solicitud (respuesta en 48–72h). 3) Entrevista de admisión de 15 min (se agenda desde una semana después, en horario laboral de Perú). 4) Si encaja, eliges plan y entras.
+1) Aplicas con tu perfil real (incluye la tracción del negocio: es parte del filtro). 2) El equipo revisa cada solicitud (respuesta en 48–72h). 3) Entrevista de admisión de 15 min por video (se agenda desde una semana después, en horario laboral de Perú, GMT-5). 4) Si eres aceptado, activas tu membresía pagando de forma segura por Mercado Pago — acepta tarjeta de crédito/débito, Yape y transferencia; los precios son en USD. 5) Con el pago confirmado se abre tu acceso a la plataforma, tu Core Group y los eventos. Aplicar es gratis: el cobro llega solo después de ser aceptado.
 
 ## Comparativa con redes globales (datos públicos 2026)
 - EO: ~US$3,500–5,000 iniciación + US$2,600–4,000/año; requisito ~US$1M facturación; foros de 8–12.
