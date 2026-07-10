@@ -6,7 +6,10 @@
   <base href="/miembros/">
   <title>Mi grupo — Ethos LATAM</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="icon" href="/favicon.ico?v=3" sizes="32x32">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=3">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -64,13 +67,13 @@
         return `<div class="post" data-id="${p.id}">
           <div class="phead"><span class="av">${esc(p.initials || inits(p.author))}</span>
             <div class="pmeta"><b>${esc(p.author)}</b><div class="sub"><span>${esc(EthShell.relTime(p.ts, p.time))}</span></div></div>
-            ${p.mine ? `<button class="post-del" data-del="${p.id}" title="Eliminar">✕</button>` : ""}</div>
+            ${p.mine ? `<button class="post-del" data-del="${p.id}" title="Eliminar" aria-label="Eliminar publicación">✕</button>` : ""}</div>
           <div class="ptext">${esc(p.text)}</div>
           <div class="pactions">
             <button class="pact like ${p.liked ? "liked" : ""}" data-like="${p.id}">
               <svg viewBox="0 0 24 24" fill="${p.liked ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
               <span class="lk">${p.likes || 0}</span></button>
-            <button class="pact" data-cmt="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.2-5.3A8.5 8.5 0 1 1 21 11.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>${(p.comments || []).length} comentar</button>
+            <button class="pact" data-cmt="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.2-5.3A8.5 8.5 0 1 1 21 11.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>${(p.comments || []).length} ${(p.comments || []).length === 1 ? "comentario" : "comentarios"}</button>
           </div>
           <div class="comments">${(p.comments || []).map((c) => `<div class="comment"><span class="av">${esc(inits(c.author))}</span><div class="cb"><b>${esc(c.author)}</b>${esc(c.text)}</div></div>`).join("")}</div>
           <div class="comment-input"><input type="text" placeholder="Escribe un comentario…" data-cinput="${p.id}"><button class="btn btn-ghost" data-csend="${p.id}">Enviar</button></div>

@@ -1,7 +1,7 @@
 // ETHOS LATAM — Auth API (email + contraseña, sesión por cookie JWT)
 import { readDB, writeDB, safeUser, hashPw, checkPw, signToken, sessionCookie, clearCookie, getSessionEmail, readJson, send, isOwner, OWNER_EMAIL, uidFor } from "../lib/server.mjs";
 import { put } from "@vercel/blob";
-import { sendEmail, emailWrap } from "../lib/email.mjs";
+import { sendEmail, emailWrap, calendlyLink } from "../lib/email.mjs";
 
 export default async function handler(req, res) {
   const q = new URL(req.url, "http://localhost").searchParams;
@@ -32,6 +32,8 @@ export default async function handler(req, res) {
       if (body.password.length < 6) return send(res, 400, { error: "La contraseña debe tener al menos 6 caracteres." });
       if (!body.country || !body.document || !body.age || !body.profession)
         return send(res, 400, { error: "Faltan datos: país, documento, edad y profesión son obligatorios." });
+      if (!body.traccion)
+        return send(res, 400, { error: "Cuéntanos la tracción de tu negocio: es parte del filtro de admisión." });
       const db = await readDB();
       if (db.users[email]) return send(res, 409, { error: "Ya existe una cuenta con ese email. Inicia sesión." });
       const firstUser = Object.keys(db.users).length === 0;
@@ -49,6 +51,7 @@ export default async function handler(req, res) {
         profession, role: profession || "Founder",
         company: str(body.company), sector: str(body.sector), city: str(body.city),
         linkedin: str(body.linkedin), instagram: str(body.instagram), bio: "",
+        traccion: str(body.traccion),
         plan: "Pro", isAdmin: approved, status: approved ? "approved" : "pending", createdAt: Date.now(), lastSeen: Date.now()
       };
       db.users[email] = user;
@@ -60,11 +63,12 @@ export default async function handler(req, res) {
       // Emails (no-op si no hay RESEND_API_KEY): confirmación al aplicante + aviso al owner.
       await sendEmail(email, "Recibimos tu solicitud — Ethos LATAM",
         emailWrap("¡Gracias por aplicar, " + (user.name.split(" ")[0]) + "!",
-          "Recibimos tu solicitud para entrar a <b>Ethos LATAM</b>. Revisamos cada perfil con atención para cuidar la calidad de la comunidad. Te escribiremos en 48–72h con la decisión.",
-          { url: "https://ethoslatam.com", label: "Conocer más" }));
+          "Recibimos tu solicitud para entrar a <b>Ethos LATAM</b>. Revisamos cada perfil con atención para cuidar la calidad de la comunidad. Te escribiremos en 48–72h con la decisión." +
+          "<br><br><b>Adelanta el siguiente paso:</b> agenda tu <b>entrevista de admisión</b> (15 minutos, por video). Los horarios se abren <b>desde la próxima semana</b>, en horario laboral de Perú (GMT-5).",
+          { url: calendlyLink(), label: "📅 Agendar mi entrevista" }));
       if (OWNER_EMAIL) await sendEmail(OWNER_EMAIL, "Nueva solicitud: " + user.name,
         emailWrap("Nueva solicitud de ingreso",
-          `<b>${user.name}</b> (${email})<br>${user.profession || ""} · ${user.company || "—"} · ${user.city || ""}, ${user.country || ""}`,
+          `<b>${user.name}</b> (${email})<br>${user.profession || ""} · ${user.company || "—"} · ${user.city || ""}, ${user.country || ""}${user.traccion ? `<br>Tracción: <b>${user.traccion}</b>` : ""}`,
           { url: "https://ethoslatam.com/miembros/admin", label: "Revisar en el panel" }));
       return send(res, 200, { pending: true });
     }

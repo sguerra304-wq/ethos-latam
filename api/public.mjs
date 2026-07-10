@@ -1,7 +1,7 @@
 // ETHOS LATAM — endpoint público (sin auth): capta solicitudes y suscripciones
 // desde la web de marketing y las guarda en el store → visibles en el panel admin.
 import { readDB, writeDB, send, readJson, OWNER_EMAIL } from "../lib/server.mjs";
-import { sendEmail, emailWrap } from "../lib/email.mjs";
+import { sendEmail, emailWrap, calendlyLink } from "../lib/email.mjs";
 
 const clean = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
 const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
@@ -19,20 +19,26 @@ export default async function handler(req, res) {
       const email = clean(body.email, 160).toLowerCase();
       const name = clean(body.name, 120);
       if (!name || !validEmail(email)) return send(res, 400, { error: "Nombre y email válido requeridos." });
+      const leadId = "ld_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       db.leads.unshift({
-        id: "ld_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        id: leadId,
         name, email, company: clean(body.company, 120), role: clean(body.role, 80),
         plan: clean(body.plan, 60), link: clean(body.link, 200), msg: clean(body.msg, 1200),
+        traccion: clean(body.traccion, 80),
         ts: Date.now(), status: "new"
       });
       if (db.leads.length > 500) db.leads.length = 500;
       await writeDB(db);
       await sendEmail(email, "Recibimos tu solicitud — Ethos LATAM",
         emailWrap("¡Gracias por aplicar, " + (name.split(" ")[0]) + "!",
-          "Recibimos tu solicitud para entrar a <b>Ethos LATAM</b>. Revisamos cada perfil con atención. Te escribiremos en 48–72h.", { url: "https://ethoslatam.com", label: "Conocer más" }));
+          "Recibimos tu solicitud para entrar a <b>Ethos LATAM</b>. Revisamos cada perfil con atención y te escribiremos en 48–72h." +
+          "<br><br><b>Adelanta el siguiente paso:</b> agenda tu <b>entrevista de admisión</b> (15 minutos, por video). Los horarios se abren <b>desde la próxima semana</b>, en horario laboral de Perú (GMT-5).",
+          { url: calendlyLink(), label: "📅 Agendar mi entrevista" }));
       if (OWNER_EMAIL) await sendEmail(OWNER_EMAIL, "Nueva solicitud web: " + name,
-        emailWrap("Nueva solicitud desde la web", `<b>${name}</b> (${email})`, { url: "https://ethoslatam.com/miembros/admin", label: "Ver en el panel" }));
-      return send(res, 200, { ok: true });
+        emailWrap("Nueva solicitud desde la web",
+          `<b>${name}</b> (${email})${body.traccion ? `<br>Tracción: <b>${clean(body.traccion, 80)}</b>` : ""}${body.link ? `<br>Perfil: ${clean(body.link, 200)}` : ""}`,
+          { url: "https://ethoslatam.com/miembros/admin", label: "Ver en el panel" }));
+      return send(res, 200, { ok: true, id: leadId });
     }
 
     if (action === "subscribe") {

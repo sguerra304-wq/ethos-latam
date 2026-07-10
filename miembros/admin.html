@@ -6,7 +6,10 @@
   <base href="/miembros/">
   <title>Admin — Ethos LATAM</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="icon" href="/favicon.ico?v=3" sizes="32x32">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=3">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -124,7 +127,7 @@
   </div>
 
   <!-- Modal -->
-  <div class="modal" id="modal">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-card">
       <h3 id="modalTitle">Editar</h3>
       <form id="modalForm"></form>
@@ -210,9 +213,10 @@
           <div class="admin-row">
             <div class="ri">
               <h4>${esc(a.name)} <span class="status-tag ${a.status}">${a.status === "pending" ? "Pendiente" : a.status === "approved" ? "Aprobada" : "Rechazada"}</span></h4>
-              <div class="meta"><span>${esc(a.role || "")}${a.company ? " · " + esc(a.company) : ""}</span><span>·</span><span>${esc(a.sector || "")}</span><span>·</span><span>${esc([a.city, a.country].filter(Boolean).join(", "))}</span>${a.age ? `<span>·</span><span>${esc(a.age)} años</span>` : ""}<span>·</span><span>Plan ${esc(a.plan || "Pro")}</span></div>
+              <div class="meta"><span>${esc(a.role || "")}${a.company ? " · " + esc(a.company) : ""}</span><span>·</span><span>${esc(a.sector || "")}</span>${a.traccion ? `<span>·</span><span>📈 ${esc(a.traccion)}</span>` : ""}<span>·</span><span>${esc([a.city, a.country].filter(Boolean).join(", "))}</span>${a.age ? `<span>·</span><span>${esc(a.age)} años</span>` : ""}<span>·</span><span>Plan ${esc(a.plan || "Pro")}</span></div>
               <div class="meta">${esc(a.email)}${a.document ? " · DNI " + esc(a.document) : ""}${a.linkedin ? " · " + esc(a.linkedin) : ""}${a.instagram ? " · IG " + esc(a.instagram) : ""}</div>
               ${a.msg ? `<div class="meta">"${esc(a.msg)}"</div>` : ""}
+              ${a.investigacion && a.investigacion.text ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--violet);font-weight:600;font-size:13px">🔎 Investigación IA</summary><div style="white-space:pre-wrap;font-size:12.5px;color:var(--ink-soft);margin-top:8px;padding:12px;background:var(--bg-soft);border-radius:10px">${esc(a.investigacion.text)}</div></details>` : ""}
             </div>
             <div class="ra">
               ${a.status === "pending" ? `<button class="btn-xs ok" data-approve="${a.id}">Aprobar</button><button class="btn-xs danger" data-reject="${a.id}">Rechazar</button>` : `<span class="meta">${a.date || ""}</span>`}
@@ -273,12 +277,17 @@
       async function renderWeb() {
         const [leads, subs] = await Promise.all([EthAdmin.listLeads(), EthAdmin.listSubscribers()]);
         $("webCount").textContent = leads.length ? "(" + leads.length + ")" : "";
+        const stTag = (s) => s === "interview" ? '<span class="status-tag approved">En entrevista</span>' : s === "discarded" ? '<span class="status-tag rejected">Descartada</span>' : '<span class="status-tag pending">Nueva</span>';
         $("leadsList").innerHTML = leads.length ? leads.map((l) => `
           <div class="admin-row">
-            <div class="ri"><h4>${esc(l.name)} <span class="muted" style="font-weight:400; font-size:13px">· ${EthShell.relTime(l.ts)}</span></h4>
-              <div class="meta"><span>${esc(l.email)}</span>${l.company ? `<span>·</span><span>${esc(l.company)}</span>` : ""}${l.role ? `<span>·</span><span>${esc(l.role)}</span>` : ""}${l.plan ? `<span>·</span><span>${esc(l.plan)}</span>` : ""}${l.link ? `<span>·</span><span>${esc(l.link)}</span>` : ""}</div>
-              ${l.msg ? `<div class="meta">"${esc(l.msg)}"</div>` : ""}</div>
-            <div class="ra"><a class="btn-xs" href="mailto:${esc(l.email)}">Responder</a><button class="btn-xs danger" data-del-lead="${l.id}">Borrar</button></div>
+            <div class="ri"><h4>${esc(l.name)} ${stTag(l.status)} <span class="muted" style="font-weight:400; font-size:13px">· ${EthShell.relTime(l.ts)}</span></h4>
+              <div class="meta"><span>${esc(l.email)}</span>${l.company ? `<span>·</span><span>${esc(l.company)}</span>` : ""}${l.role ? `<span>·</span><span>${esc(l.role)}</span>` : ""}${l.traccion ? `<span>·</span><span>📈 ${esc(l.traccion)}</span>` : ""}${l.plan ? `<span>·</span><span>${esc(l.plan)}</span>` : ""}${l.link ? `<span>·</span><span>${esc(l.link)}</span>` : ""}</div>
+              ${l.msg ? `<div class="meta">"${esc(l.msg)}"</div>` : ""}
+              ${l.investigacion && l.investigacion.text ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--violet);font-weight:600;font-size:13px">🔎 Investigación IA</summary><div style="white-space:pre-wrap;font-size:12.5px;color:var(--ink-soft);margin-top:8px;padding:12px;background:var(--bg-soft);border-radius:10px">${esc(l.investigacion.text)}</div></details>` : ""}</div>
+            <div class="ra">
+              ${l.status !== "interview" ? `<button class="btn-xs ok" data-lead-status="${l.id}|interview">📞 Entrevista</button>` : `<button class="btn-xs" data-lead-status="${l.id}|new">↩ Nueva</button>`}
+              ${l.status !== "discarded" ? `<button class="btn-xs" data-lead-status="${l.id}|discarded">Descartar</button>` : ""}
+              <a class="btn-xs" href="mailto:${esc(l.email)}">Responder</a><button class="btn-xs danger" data-del-lead="${l.id}">Borrar</button></div>
           </div>`).join("") : '<p class="muted">Aún no hay solicitudes desde la web.</p>';
         $("subCount").textContent = subs.length ? "(" + subs.length + ")" : "";
         $("subsList").innerHTML = subs.length ? subs.map((s) => `
@@ -412,6 +421,7 @@
         else if (d.delMem) { if (confirm("¿Quitar a este miembro?")) { await EthAdmin.removeMember(d.delMem); EthShell.toast("Miembro quitado"); renderMembers(); } }
         else if (d.editGrp) { const g = (await EthAdmin.listGroups()).find((x) => x.id === d.editGrp); const members = await EthAdmin.listMembers(); modalKind = "group"; openModal("Editar grupo", groupForm(g, members)); }
         else if (d.delGrp) { if (confirm("¿Borrar este grupo?")) { await EthAdmin.deleteGroup(d.delGrp); EthShell.toast("Grupo borrado"); renderGroups(); } }
+        else if (d.leadStatus) { const [lid, lst] = d.leadStatus.split("|"); await EthAdmin.setLeadStatus(lid, lst); EthShell.toast(lst === "interview" ? "Marcada en entrevista 📞" : lst === "discarded" ? "Solicitud descartada" : "Marcada como nueva"); renderWeb(); }
         else if (d.delLead) { if (confirm("¿Borrar esta solicitud?")) { await EthAdmin.deleteLead(d.delLead); EthShell.toast("Solicitud borrada"); renderWeb(); } }
         else if (d.delSub) { if (confirm("¿Quitar este suscriptor?")) { await EthAdmin.deleteSubscriber(d.delSub); EthShell.toast("Suscriptor quitado"); renderWeb(); } }
       });
@@ -429,7 +439,7 @@
       const csvEsc = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
       const toCSV = (rows, cols) => [cols.map((c) => csvEsc(c.h)).join(","), ...rows.map((r) => cols.map((c) => csvEsc(r[c.k])).join(","))].join("\r\n");
       const download = (name, text) => { const b = new Blob(["﻿" + text], { type: "text/csv;charset=utf-8" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
-      $("expLeads").onclick = async () => { const leads = await EthAdmin.listLeads(); if (!leads.length) { EthShell.toast("No hay solicitudes"); return; } download("solicitudes-ethos.csv", toCSV(leads.map((l) => ({ ...l, fecha: new Date(l.ts).toISOString().slice(0, 10) })), [{ h: "Fecha", k: "fecha" }, { h: "Nombre", k: "name" }, { h: "Email", k: "email" }, { h: "Empresa", k: "company" }, { h: "Rol", k: "role" }, { h: "Plan", k: "plan" }, { h: "Link", k: "link" }, { h: "Mensaje", k: "msg" }])); EthShell.toast("CSV descargado ⬇"); };
+      $("expLeads").onclick = async () => { const leads = await EthAdmin.listLeads(); if (!leads.length) { EthShell.toast("No hay solicitudes"); return; } download("solicitudes-ethos.csv", toCSV(leads.map((l) => ({ ...l, fecha: new Date(l.ts).toISOString().slice(0, 10) })), [{ h: "Fecha", k: "fecha" }, { h: "Nombre", k: "name" }, { h: "Email", k: "email" }, { h: "Empresa", k: "company" }, { h: "Rol", k: "role" }, { h: "Tracción", k: "traccion" }, { h: "Plan", k: "plan" }, { h: "Link", k: "link" }, { h: "Mensaje", k: "msg" }])); EthShell.toast("CSV descargado ⬇"); };
       $("expSubs").onclick = async () => { const subs = await EthAdmin.listSubscribers(); if (!subs.length) { EthShell.toast("No hay suscriptores"); return; } download("suscriptores-ethos.csv", toCSV(subs.map((s) => ({ email: s.email, fecha: new Date(s.ts).toISOString().slice(0, 10) })), [{ h: "Email", k: "email" }, { h: "Fecha", k: "fecha" }])); EthShell.toast("CSV descargado ⬇"); };
 
       await Promise.all([renderOverview(), renderApps(), renderEvents(), renderResources(), renderPerks(), renderMembers(), renderGroups(), renderWeb(), renderSettings()]);

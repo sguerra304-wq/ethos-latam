@@ -84,5 +84,27 @@ Allow: /
 Disallow: /miembros/
 Disallow: /api/
 
+
+User-agent: Claude-User
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: MistralAI-User
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: YouBot
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
+User-agent: GoogleOther
+Allow: /
+Disallow: /miembros/
+Disallow: /api/
+
 # Guía para LLMs: https://ethoslatam.com/llms.txt
+# Contenido completo para LLMs: https://ethoslatam.com/llms-full.txt
 Sitemap: https://ethoslatam.com/sitemap.xml

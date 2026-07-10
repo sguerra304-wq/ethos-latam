@@ -35,6 +35,7 @@
 
     async listLeads() { return window.EthData.leads(); },
     async deleteLead(id) { return after(await post("deleteLead", { id })); },
+    async setLeadStatus(id, status) { return after(await post("setLeadStatus", { id, status })); },
     async listSubscribers() { return window.EthData.subscribers(); },
     async deleteSubscriber(email) { return after(await post("deleteSubscriber", { email })); },
 

@@ -288,6 +288,13 @@ export default async function handler(req, res) {
       case "exportDB": { if (!needAdmin()) return; return send(res, 200, { db, exportedAt: Date.now() }); }
       /* ----- admin: captación web (leads + suscriptores) ----- */
       case "deleteLead": { if (!needAdmin()) return; db.leads = (db.leads || []).filter((x) => x.id !== body.id); await writeDB(db); return send(res, 200, { ok: true }); }
+      case "setLeadStatus": {
+        if (!needAdmin()) return;
+        const st = ["new", "interview", "discarded"].includes(body.status) ? body.status : "new";
+        const l = (db.leads || []).find((x) => x.id === body.id);
+        if (l) { l.status = st; await writeDB(db); }
+        return send(res, 200, { ok: true, status: st });
+      }
       case "deleteSubscriber": { if (!needAdmin()) return; db.subscribers = (db.subscribers || []).filter((x) => x.email !== body.email); await writeDB(db); return send(res, 200, { ok: true }); }
       /* ----- mensajes directos (DMs) ----- */
       case "sendDM": {

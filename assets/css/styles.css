@@ -143,7 +143,7 @@ h3 { font-size: clamp(1.2rem, 1.8vw, 1.5rem); }
 }
 .nav { display: flex; align-items: center; justify-content: space-between; height: 76px; }
 .brand { display: inline-flex; align-items: center; gap: 11px; font-family: var(--font-display); font-weight: 700; font-size: 1.18rem; letter-spacing: -.01em; color: var(--ink); }
-.brand .mark { width: 34px; height: 34px; }
+.brand .mark { width: 34px; height: 34px; border-radius: 9px; object-fit: cover; }
 .brand b { color: var(--violet); }
 .nav-links { display: flex; align-items: center; gap: 4px; }
 .nav-links a {
@@ -155,6 +155,8 @@ h3 { font-size: clamp(1.2rem, 1.8vw, 1.5rem); }
 .nav-cta { display: flex; align-items: center; gap: 12px; }
 .nav-toggle { display: none; flex-direction: column; gap: 5px; padding: 8px; }
 .nav-toggle span { width: 24px; height: 2px; background: var(--ink); border-radius: 2px; transition: .3s; }
+/* Mobile-only CTA clones injected into the dropdown menu (hidden on desktop) */
+.nav-m-cta { display: none; }
 
 /* ---------- Media frames ---------- */
 .media-frame { position: relative; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); background: var(--bg-soft); }
@@ -227,6 +229,13 @@ h3 { font-size: clamp(1.2rem, 1.8vw, 1.5rem); }
 .trust-strip .tl { font-family:var(--font-display); font-size:12.5px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); }
 .trust-strip .ts { font-family:var(--font-display); font-weight:600; font-size:1.05rem; color:var(--ink); opacity:.7; transition:opacity .2s, color .2s; }
 .trust-strip .ts:hover { opacity:1; color:var(--violet); }
+
+/* ---------- Cities band (presencia LATAM) ---------- */
+.cities { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; }
+.city { display:inline-flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:600; font-size:15px; color:var(--ink-soft); padding:11px 19px; border:1px solid var(--line); border-radius:100px; background:#fff; box-shadow:var(--shadow-sm); transition:transform .25s var(--ease), border-color .25s, color .25s; }
+.city .flag { width:23px; height:15px; border-radius:3px; overflow:hidden; flex:none; box-shadow:0 0 0 1px rgba(18,21,27,.12); display:block; }
+.city .flag svg { display:block; width:100%; height:100%; }
+.city:hover { transform:translateY(-3px); border-color:rgba(108,60,224,.4); color:var(--violet); }
 
 /* ---------- Guarantee row ---------- */
 .guarantee { display:flex; flex-wrap:wrap; justify-content:center; gap:10px 26px; margin-top:24px; }
@@ -488,13 +497,15 @@ h3 { font-size: clamp(1.2rem, 1.8vw, 1.5rem); }
 }
 @media (max-width: 680px) {
   body { font-size:16px; }
-  .nav-links, .nav-cta .btn-ghost { display:none; }
+  .nav-links, .nav-cta .btn { display:none; }
   .nav-toggle { display:flex; }
   .site-header.open .nav-links {
     display:flex; flex-direction:column; position:absolute; top:76px; left:0; right:0;
-    background:rgba(251,251,248,.97); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); padding:18px 24px; gap:4px;
+    background:rgba(251,251,248,.97); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); padding:18px 24px; gap:6px;
   }
   .site-header.open .nav-links a { width:100%; }
+  .site-header.open .nav-links .nav-m-cta { display:inline-flex; width:100%; margin-top:2px; }
+  .site-header.open .nav-links .nav-m-cta:first-of-type { margin-top:10px; }
   .event-row { grid-template-columns:70px 1fr; }
   .ev-cta { grid-column:1/-1; text-align:left; }
   .field-row { grid-template-columns:1fr; }

@@ -10,10 +10,28 @@
 
   /* Mobile nav */
   const toggle = document.querySelector(".nav-toggle");
+  const navLinks = document.querySelector(".nav-links");
+  const navCta = document.querySelector(".nav-cta");
+  /* Surface the header CTAs (Entrar / Aplicar) inside the mobile dropdown,
+     since the inline buttons are hidden on small screens. */
+  if (navLinks && navCta) {
+    navCta.querySelectorAll("a.btn").forEach((btn) => {
+      const clone = btn.cloneNode(true);
+      clone.className = clone.className.replace(/\bbtn-lg\b/, "").trim() + " nav-m-cta";
+      navLinks.appendChild(clone);
+    });
+  }
   if (toggle && header) {
-    toggle.addEventListener("click", () => header.classList.toggle("open"));
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.addEventListener("click", () => {
+      const open = header.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
     header.querySelectorAll(".nav-links a").forEach((a) =>
-      a.addEventListener("click", () => header.classList.remove("open"))
+      a.addEventListener("click", () => {
+        header.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+      })
     );
   }
 
@@ -142,7 +160,7 @@
   if (document.querySelector("section.hero")) {
     const m = document.createElement("div");
     m.className = "mcta";
-    m.innerHTML = '<a href="contacto.html" class="btn btn-lime btn-lg">Aplicar al club →</a>';
+    m.innerHTML = '<a href="/contacto" class="btn btn-lime btn-lg">Aplicar al club →</a>';
     document.body.appendChild(m);
     const onMcta = () => m.classList.toggle("show", window.scrollY > 560);
     window.addEventListener("scroll", onMcta, { passive: true });
@@ -171,12 +189,22 @@
       e.preventDefault();
       const g = (n) => { const el = applyForm.querySelector(`[name="${n}"]`); return el ? el.value.trim() : ""; };
       if (g("_honey")) return; // honeypot anti-spam
-      const payload = { name: g("Nombre"), email: g("Email"), company: g("Empresa"), role: g("Rol"), plan: g("Plan de interés"), link: g("Web/LinkedIn"), msg: g("Mensaje") };
+      const payload = { name: g("Nombre"), email: g("Email"), company: g("Empresa"), role: g("Rol"), plan: g("Plan de interés"), link: g("Web/LinkedIn"), msg: g("Mensaje"), traccion: g("Tracción") };
       const btn = applyForm.querySelector('button[type="submit"]'); if (btn) { btn.disabled = true; btn.textContent = "Enviando…"; }
       try {
         const r = await fetch("/api/public?action=apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         if (!r.ok) throw new Error();
-        applyForm.innerHTML = '<div style="text-align:center; padding:34px 10px"><div style="font-size:46px">✅</div><h3 style="margin:12px 0 6px">¡Solicitud enviada!</h3><p class="muted">Revisamos cada solicitud con atención y te respondemos en 48–72h. Gracias por tu interés en Ethos LATAM.</p></div>';
+        // Dispara la investigación IA del aplicante (fire-and-forget; el informe
+        // le llega al owner por email y queda en el panel de admin).
+        try {
+          const d = await r.json();
+          if (d.id) fetch("/api/investigar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "lead", id: d.id }) }).catch(() => {});
+        } catch (e) {}
+        // Siguiente paso inmediato: entrevista de admisión (Calendly aterriza +7 días;
+        // la regla dura de "mín. 1 semana, horario laboral Perú" vive en Calendly).
+        const iso = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
+        const cal = "https://calendly.com/sguerra304?month=" + iso.slice(0, 7) + "&date=" + iso;
+        applyForm.innerHTML = '<div style="text-align:center; padding:34px 10px"><div style="font-size:46px">✅</div><h3 style="margin:12px 0 6px">¡Solicitud enviada!</h3><p class="muted">Revisamos cada solicitud con atención y te respondemos en 48–72h.</p><p class="muted" style="margin-top:10px">Adelanta el siguiente paso: agenda tu <b>entrevista de admisión</b> (15 min). Horarios desde la próxima semana, en horario laboral de Perú (GMT-5).</p><a class="btn btn-lime" style="margin-top:18px" target="_blank" rel="noopener" href="' + cal + '">📅 Agendar mi entrevista</a></div>';
       } catch (err) { if (btn) { btn.disabled = false; btn.textContent = "Enviar solicitud"; } alert("No se pudo enviar. Inténtalo de nuevo o escríbenos a hola@ethoslatam.com"); }
     });
   }

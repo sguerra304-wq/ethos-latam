@@ -6,7 +6,10 @@
   <base href="/miembros/">
   <title>Entrar — Ethos LATAM</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="icon" href="/favicon.ico?v=3" sizes="32x32">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=3">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -26,7 +29,7 @@
     <div class="auth-panel">
       <div class="auth-card">
         <a href="../index.html" class="brand" aria-label="Ethos LATAM inicio">
-          <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="ethmk" x1="9" y1="34" x2="55" y2="30" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#C7FB4F"/><stop offset="1" stop-color="#7B5CFF"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="#0E1014"/><path d="M32 15 L53 54 L11 54 Z" fill="none" stroke="url(#ethmk)" stroke-width="5.5" stroke-linejoin="round"/><path d="M32 8 L39.5 23 L35 23 L35 47 L29 47 L29 23 L24.5 23 Z" fill="url(#ethmk)"/></svg>
+          <img class="mark" src="/assets/img/logo.png" alt="" aria-hidden="true" width="34" height="34" decoding="async">
           Ethos <b>LATAM</b>
         </a>
 
@@ -35,9 +38,9 @@
         <h1 id="authTitle">Bienvenido de vuelta</h1>
         <p class="sub" id="authSub">Entra para acceder a tu comunidad.</p>
 
-        <div class="auth-tabs">
-          <button id="tabIn" class="on" type="button">Entrar</button>
-          <button id="tabUp" type="button">Crear cuenta</button>
+        <div class="auth-tabs" role="tablist" aria-label="Entrar o crear cuenta">
+          <button id="tabIn" class="on" type="button" role="tab" aria-selected="true">Entrar</button>
+          <button id="tabUp" type="button" role="tab" aria-selected="false">Crear cuenta</button>
         </div>
 
         <button class="btn-google" id="btnGoogle" type="button">
@@ -81,6 +84,16 @@
               <div class="field"><label for="profession">Profesión / Rol</label><input id="profession" type="text" placeholder="Founder, CEO, Inversionista…"></div>
               <div class="field"><label for="sector">Sector</label><input id="sector" type="text" placeholder="SaaS, Fintech…"></div>
             </div>
+            <div class="field"><label for="traccion">Tracción de tu negocio</label>
+              <select id="traccion">
+                <option value="" disabled selected>Selecciona…</option>
+                <option>Idea / pre-lanzamiento</option>
+                <option>Facturando &lt; US$5k/mes</option>
+                <option>US$5k – 20k/mes</option>
+                <option>Más de US$20k/mes</option>
+                <option>Levanté ronda / tuve un exit</option>
+              </select>
+            </div>
             <div class="field"><label for="company">Empresa / proyecto</label><input id="company" type="text" placeholder="Nombre de tu empresa"></div>
             <div class="field-row">
               <div class="field"><label for="linkedin">LinkedIn <span class="muted" style="font-weight:400">(opcional)</span></label><input id="linkedin" type="text" placeholder="https://linkedin.com/in/…"></div>
@@ -123,6 +136,8 @@
         var up = m === "up";
         $("tabIn").classList.toggle("on", !up);
         $("tabUp").classList.toggle("on", up);
+        $("tabIn").setAttribute("aria-selected", String(!up));
+        $("tabUp").setAttribute("aria-selected", String(up));
         $("nameField").style.display = up ? "block" : "none";
         $("signupExtra").style.display = up ? "block" : "none";
         $("signupNote").style.display = up ? "block" : "none";
@@ -166,18 +181,27 @@
             document: $("document").value.trim(), age: $("age").value,
             profession: $("profession").value.trim(), sector: $("sector").value.trim(),
             company: $("company").value.trim(), linkedin: $("linkedin").value.trim(),
-            instagram: $("instagram").value.trim()
+            instagram: $("instagram").value.trim(), traccion: $("traccion").value
           };
           if (!name) { show("err", "Escribe tu nombre completo."); return; }
           if (!profile.country) { show("err", "Selecciona tu país."); return; }
           if (!profile.document) { show("err", "Ingresa tu documento (DNI/ID)."); return; }
           if (!profile.age || +profile.age < 18) { show("err", "Ingresa una edad válida (18+)."); return; }
           if (!profile.profession) { show("err", "Indica tu profesión o rol."); return; }
+          if (!profile.traccion) { show("err", "Selecciona la tracción de tu negocio: es parte del filtro de admisión."); return; }
           r = await window.EthAuth.signUpPassword(email, pw, name, profile);
           if (r.ok && r.pending) {
+            // Dispara la investigación IA del aplicante (fire-and-forget).
+            try { fetch("/api/investigar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "signup", email: email }) }).catch(function () {}); } catch (e) {}
             setMode("in");
             $("password").value = "";
             show("ok", "✅ ¡Solicitud enviada! Revisaremos tu perfil y te daremos acceso cuando sea aprobada. Te avisaremos por email.");
+            // Siguiente paso: entrevista de admisión (el enlace aterriza una semana
+            // adelante; la regla dura vive en la config del evento de Calendly).
+            var iso = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
+            msg.insertAdjacentHTML("beforeend",
+              '<br><a href="https://calendly.com/sguerra304?month=' + iso.slice(0, 7) + '&date=' + iso +
+              '" target="_blank" rel="noopener" style="color:var(--violet);font-weight:600">📅 Agenda tu entrevista de admisión (desde la próxima semana, horario laboral Perú) →</a>');
             return;
           }
         } else {

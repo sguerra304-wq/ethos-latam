@@ -4,17 +4,29 @@
    ========================================================= */
 (function () {
   let snap = null;
-  const get = () => fetch("/api/db", { credentials: "same-origin" }).then((r) => r.json());
+
+  // ---- Cache de sesión (stale-while-revalidate): navegación entre páginas instantánea ----
+  const CK = "eth_snap_v1";
+  const saveCache = (s) => { try { if (s) sessionStorage.setItem(CK, JSON.stringify(s)); } catch (e) {} };
+  const loadCache = () => { try { const r = sessionStorage.getItem(CK); return r ? JSON.parse(r) : null; } catch (e) { return null; } };
+
+  const get = () => fetch("/api/db", { credentials: "same-origin" })
+    .then((r) => r.json())
+    .then((j) => { saveCache(j); return j; });
   const post = (op, payload) => fetch("/api/db", {
     method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(Object.assign({ op }, payload))
   }).then((r) => r.json());
 
-  async function ensure() { if (!snap) snap = await get(); return snap; }
+  async function ensure() { if (!snap) snap = loadCache(); if (!snap) snap = await get(); return snap; }
   async function refresh() { snap = await get(); return snap; }
 
   const EthData = {
     refresh,
+    /* Snapshot en memoria/caché sin disparar fetch (para render inmediato). */
+    peek() { if (!snap) snap = loadCache(); return snap; },
+    /* Limpia el snapshot y la caché (al cerrar sesión). */
+    clearCache() { snap = null; try { sessionStorage.removeItem(CK); } catch (e) {} },
     async channels() { return (await ensure()).channels || []; },
     async events() { return (await ensure()).events || []; },
     async members() { return (await ensure()).members || []; },

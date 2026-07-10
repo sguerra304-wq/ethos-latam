@@ -2,6 +2,19 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
+  "crons": [
+    { "path": "/api/seguimiento", "schedule": "0 15 * * *" }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.ethoslatam.com" }],
+      "destination": "https://ethoslatam.com/$1",
+      "permanent": true
+    },
+    { "source": "/club-de-founders-madrid", "destination": "/", "permanent": true },
+    { "source": "/club-de-founders-miami", "destination": "/", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",
