@@ -1,6 +1,7 @@
 // ETHOS LATAM — Data API (datos compartidos en Vercel Blob)
 import { readDB, writeDB, safeUser, getSessionEmail, readJson, send, initials, isOwner, uidFor, pushNotif } from "../lib/server.mjs";
 import { sendEmail, emailWrap } from "../lib/email.mjs";
+import { MP_LINK, precioDe } from "../lib/pagos.mjs";
 
 const rid = (p) => p + "_" + Math.random().toString(36).slice(2, 10);
 
@@ -127,10 +128,11 @@ export default async function handler(req, res) {
         myDms,
         notifications,
         unreadNotifs: notifications.filter((n) => !n.read).length,
-        applications: isAdmin ? Object.values(db.users).filter((u) => u.status === "pending").map((u) => ({
+        applications: isAdmin ? Object.values(db.users).filter((u) => u.status === "pending" || u.status === "payment").map((u) => ({
           id: u.email, name: u.name, email: u.email, role: u.profession || u.role, company: u.company,
           sector: u.sector, city: u.city, country: u.country, age: u.age, document: u.document,
-          plan: u.plan, linkedin: u.linkedin, instagram: u.instagram, msg: u.bio || "", status: "pending",
+          plan: u.plan, linkedin: u.linkedin, instagram: u.instagram, msg: u.bio || "", status: u.status,
+          traccion: u.traccion, investigacion: u.investigacion,
           date: new Date(u.createdAt || Date.now()).toISOString().slice(0, 10)
         })) : [],
         myRsvps: db.rsvps[email] || [],
@@ -235,16 +237,40 @@ export default async function handler(req, res) {
         return send(res, 200, { ok: true, plan });
       }
       /* ----- admin: solicitudes ----- */
+      // Paso 1 — ACEPTAR Y COBRAR: se aprueba el perfil pero NO se da acceso todavía.
+      // Se le envía al aplicante el link de pago de Mercado Pago con el monto de su plan.
+      // El acceso se abre recién al confirmar el pago (op "approveApp").
+      case "acceptApp": {
+        if (!needAdmin()) return;
+        const u = db.users[body.id];
+        if (u) {
+          u.status = "payment";
+          u.acceptedAt = Date.now();
+          const p = precioDe(u.plan);
+          pushNotif(db, body.id, { type: "approval", text: "✅ ¡Fuiste aceptado! Activa tu membresía para entrar.", href: "index.html" });
+          await writeDB(db);
+          await sendEmail(body.id, "¡Fuiste aceptado en Ethos LATAM! Activa tu membresía",
+            emailWrap("Enhorabuena, " + ((u.name || "").split(" ")[0]) + " ✦",
+              "Revisamos tu perfil y <b>te aceptamos en Ethos LATAM</b> — el club de founders de alto rendimiento de la región." +
+              "<br><br>Para activar tu membresía <b>" + p.nombre + "</b>, completa el pago de <b>" + p.monto + p.periodo + "</b> por Mercado Pago (tarjeta, Yape o transferencia). En el checkout, ingresa exactamente ese monto." +
+              "<br><br>En cuanto confirmemos tu pago, abrimos tu acceso a la plataforma, tu Core Group y los eventos. Tu cupo queda reservado a tu nombre por 7 días.",
+              { url: MP_LINK, label: "💳 Pagar y activar mi membresía" }));
+          return send(res, 200, { ok: true });
+        }
+        await writeDB(db); return send(res, 200, { ok: true });
+      }
+      // Paso 2 — CONFIRMAR PAGO: se abre el acceso a la plataforma y se da la bienvenida.
       case "approveApp": {
         if (!needAdmin()) return;
         const u = db.users[body.id];
         if (u) {
           u.status = "approved";
-          pushNotif(db, body.id, { type: "approval", text: "✅ ¡Tu solicitud fue aprobada! Bienvenido a Ethos LATAM.", href: "index.html" });
+          u.paidAt = Date.now();
+          pushNotif(db, body.id, { type: "approval", text: "✅ ¡Pago confirmado! Ya eres parte de Ethos LATAM.", href: "index.html" });
           await writeDB(db);
-          await sendEmail(body.id, "¡Bienvenido a Ethos LATAM! 🎉",
-            emailWrap("Tu solicitud fue aprobada, " + ((u.name || "").split(" ")[0]) + " 🎉",
-              "Ya eres parte de <b>Ethos LATAM</b>. Entra a la plataforma para completar tu perfil, unirte a tu Core Group, reservar eventos y conocer a la comunidad.",
+          await sendEmail(body.id, "Tu membresía Ethos LATAM está activa 🎉",
+            emailWrap("¡Bienvenido a Ethos LATAM, " + ((u.name || "").split(" ")[0]) + "! 🎉",
+              "Confirmamos tu pago y tu membresía ya está <b>activa</b>. Entra a la plataforma para completar tu perfil, unirte a tu Core Group, reservar eventos y conocer a la comunidad.",
               { url: "https://ethoslatam.com/miembros/login", label: "Entrar a la plataforma" }));
           return send(res, 200, { ok: true });
         }

@@ -81,6 +81,7 @@ export default async function handler(req, res) {
       }
       const st = user.status || "approved"; // usuarios antiguos sin status = aprobados
       if (st === "rejected") return send(res, 403, { error: "Tu solicitud de acceso no fue aprobada." });
+      if (st === "payment" && !isOwner(email)) return send(res, 403, { error: "¡Fuiste aceptado! Tu acceso se activa en cuanto confirmemos tu pago. Revisa el correo con el link de Mercado Pago." });
       if (st !== "approved" && !isOwner(email)) return send(res, 403, { error: "Tu solicitud está en revisión. Te avisaremos cuando sea aprobada." });
       user.lastSeen = Date.now();
       await writeDB(db);

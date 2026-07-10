@@ -194,6 +194,7 @@
 .status-tag.pending { background: rgba(246,181,60,.16); color: #C98A12; }
 .status-tag.approved { background: rgba(184,242,48,.18); color: var(--lime-deep); }
 .status-tag.rejected { background: rgba(255,92,57,.1); color: var(--coral); }
+.status-tag.payment { background: rgba(108,60,224,.12); color: var(--violet); }
 .admin-row select.mini { padding: 8px 10px; border: 1px solid var(--line); border-radius: 100px; font: inherit; font-size: 13px; background: #fff; }
 
 /* modal */

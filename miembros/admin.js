@@ -22,6 +22,7 @@
     async deletePerk(id) { return after(await post("deletePerk", { id })); },
 
     async listApplications() { return window.EthData.applications(); },
+    async acceptApplication(id) { return after(await post("acceptApp", { id })); },
     async approveApplication(id) { return after(await post("approveApp", { id })); },
     async rejectApplication(id) { return after(await post("rejectApp", { id })); },
 
