@@ -31,6 +31,7 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - **Café de la semana:** cada semana la plataforma te empareja con otro founder para una llamada de 20 minutos (networking sin fricción).
 - **Beneficios (perks):** deals canjeables de partners (créditos cloud, software, banca para startups, wellness) por miles de dólares según el plan, con código y enlace de canje.
 - **Recursos:** plantillas, guías y workshops solo para miembros.
+- **Herramientas de founder:** calculadora de runway, calculadora de dilución de ronda, Ethos Score (test de alto rendimiento del founder) y Pitch Doctor con IA (feedback de pitch a nivel inversionista), exclusivas de la plataforma de miembros.
 - **Gamificación:** puntos por participar (publicar, asistir, ayudar) y ranking de founders más activos.
 - **Wellness:** programas de energía, longevidad, foco y alto rendimiento para founders.
 

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/miembros/">
+  <title>Herramientas — Ethos LATAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.ico?v=3" sizes="32x32">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=3">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="app.css">
+  <style>
+    .tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px; align-items:start; }
+    .tool-card { background:var(--bg-card,#fff); border:1px solid var(--line); border-radius:var(--radius,18px); padding:24px; }
+    .tool-card h3 { margin:0 0 4px; font-size:18px; }
+    .tool-card > p.desc { color:var(--muted); font-size:13.5px; margin:0 0 16px; }
+    .tool-card .field { margin-bottom:12px; }
+    .tool-card label { display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:5px; }
+    .tool-out { margin-top:14px; padding:16px; background:var(--bg-soft,#F6F7F2); border-radius:12px; font-size:14px; line-height:1.55; display:none; }
+    .tool-out.show { display:block; }
+    .tool-out .big { font-family:var(--font-display); font-size:26px; font-weight:700; }
+    .tool-out .ok { color:var(--lime-deep,#5a7d0a); } .tool-out .warn { color:#C98A12; } .tool-out .bad { color:var(--coral,#e0492e); }
+    .bar { height:8px; background:#e7e9e0; border-radius:100px; overflow:hidden; margin:8px 0 4px; }
+    .bar i { display:block; height:100%; border-radius:100px; background:linear-gradient(90deg,var(--lime,#B8F230),var(--violet,#6C3CE0)); }
+    .cap-table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+    .cap-table td, .cap-table th { padding:6px 8px; border-bottom:1px solid var(--line); text-align:left; }
+    .cap-table td:last-child, .cap-table th:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+    .score-q { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px dashed var(--line); }
+    .score-q span { font-size:13.5px; }
+    .score-q .opts { display:flex; gap:4px; flex-shrink:0; }
+    .score-q .opts button { width:30px; height:30px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:12.5px; font-weight:600; }
+    .score-q .opts button.sel { background:var(--violet,#6C3CE0); color:#fff; border-color:var(--violet,#6C3CE0); }
+    .pitch-fb { white-space:pre-wrap; }
+    .tool-card textarea { min-height:110px; resize:vertical; }
+    .tool-card .btn { width:100%; margin-top:4px; }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="app-main">
+      <h1 class="page-title">Herramientas de founder</h1>
+      <p class="page-sub">Calculadoras y asistentes exclusivos de la membresía. Nada se guarda: tus números son tuyos.</p>
+
+      <div class="tools-grid">
+
+        <!-- 1. RUNWAY -->
+        <div class="tool-card">
+          <h3>🧮 Runway</h3>
+          <p class="desc">¿Cuántos meses de vida tiene tu startup con la caja actual?</p>
+          <div class="field"><label>Caja actual (USD)</label><input id="rwCash" type="number" min="0" placeholder="120000"></div>
+          <div class="field"><label>Gasto mensual — burn (USD)</label><input id="rwBurn" type="number" min="0" placeholder="18000"></div>
+          <div class="field"><label>Ingresos mensuales (USD)</label><input id="rwRev" type="number" min="0" value="0"></div>
+          <div class="field"><label>Crecimiento mensual de ingresos (%)</label><input id="rwGrow" type="number" step="0.5" value="0"></div>
+          <button class="btn btn-primary" id="rwGo">Calcular runway</button>
+          <div class="tool-out" id="rwOut"></div>
+        </div>
+
+        <!-- 2. DILUCIÓN -->
+        <div class="tool-card">
+          <h3>📊 Dilución de ronda</h3>
+          <p class="desc">Levantas capital: ¿cuánto cedes y con cuánto te quedas?</p>
+          <div class="field"><label>Valoración pre-money (USD)</label><input id="dlPre" type="number" min="0" placeholder="4000000"></div>
+          <div class="field"><label>Monto a levantar (USD)</label><input id="dlInv" type="number" min="0" placeholder="800000"></div>
+          <div class="field"><label>Option pool nuevo (% post, opcional)</label><input id="dlPool" type="number" min="0" max="30" value="0"></div>
+          <div class="field"><label>Tu % actual de la empresa</label><input id="dlOwn" type="number" min="0" max="100" value="100"></div>
+          <button class="btn btn-primary" id="dlGo">Calcular dilución</button>
+          <div class="tool-out" id="dlOut"></div>
+        </div>
+
+        <!-- 3. ETHOS SCORE -->
+        <div class="tool-card">
+          <h3>🩺 Ethos Score</h3>
+          <p class="desc">Tu alto rendimiento como founder, en 10 preguntas (1 = mal · 5 = excelente).</p>
+          <div id="scQs"></div>
+          <button class="btn btn-primary" id="scGo" style="margin-top:14px">Ver mi score</button>
+          <div class="tool-out" id="scOut"></div>
+        </div>
+
+        <!-- 4. PITCH DOCTOR -->
+        <div class="tool-card">
+          <h3>🎤 Pitch Doctor <span style="font-size:11px;background:rgba(108,60,224,.12);color:var(--violet,#6C3CE0);padding:3px 9px;border-radius:100px;vertical-align:middle">IA</span></h3>
+          <p class="desc">Pega tu pitch y recibe el feedback que te daría un inversionista. 5 análisis al día.</p>
+          <div class="field"><label>Tu pitch (elevator o resumen)</label><textarea id="pdPitch" class="" placeholder="Somos X y ayudamos a Y a lograr Z mediante..."></textarea></div>
+          <div class="field"><label>Contexto (opcional: etapa, sector, país)</label><input id="pdCtx" type="text" placeholder="Seed, fintech, Perú"></div>
+          <button class="btn btn-primary" id="pdGo">Analizar mi pitch</button>
+          <div class="tool-out" id="pdOut"></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="data.js"></script>
+  <script src="shell.js"></script>
+  <script>
+    (async function () {
+      const user = await EthShell.mount("herramientas");
+      if (!user) return;
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      const usd = (n) => "$" + Math.round(n).toLocaleString("en-US");
+      const num = (id) => { const v = parseFloat($(id).value); return isNaN(v) ? 0 : v; };
+      const out = (id, html) => { const el = $(id); el.innerHTML = html; el.classList.add("show"); };
+
+      /* ---------- 1. Runway ---------- */
+      $("rwGo").addEventListener("click", () => {
+        const cash = num("rwCash"), burn = num("rwBurn"), rev0 = num("rwRev"), g = num("rwGrow") / 100;
+        if (!cash || !burn) return out("rwOut", '<span class="bad">Necesito al menos la caja y el burn mensual.</span>');
+        let c = cash, rev = rev0, m = 0;
+        while (c > 0 && m < 120) { c += rev - burn; if (c <= 0) break; rev *= 1 + g; m++; }
+        const infinito = m >= 120;
+        const fecha = new Date(); fecha.setMonth(fecha.getMonth() + m);
+        const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+        const nivel = infinito ? "ok" : m >= 18 ? "ok" : m >= 9 ? "warn" : "bad";
+        const consejo = infinito ? "Con ese crecimiento tu operación se autofinancia. 👑"
+          : m >= 18 ? "Posición sana: levanta (si quieres) desde la fuerza, no desde la urgencia."
+          : m >= 9 ? "Zona de atención: si piensas levantar ronda, empieza YA — un proceso serio toma 6 meses."
+          : "Zona crítica: recorta burn o asegura ingresos/capital este trimestre. Háblalo en tu Core Group.";
+        out("rwOut",
+          `<div class="big ${nivel}">${infinito ? "∞" : m + " meses"}</div>` +
+          (infinito ? "" : `<div>Caja hasta <b>${meses[fecha.getMonth()]} ${fecha.getFullYear()}</b> · burn neto inicial ${usd(burn - rev0)}/mes</div>`) +
+          `<div class="bar"><i style="width:${infinito ? 100 : Math.min(100, (m / 24) * 100)}%"></i></div>` +
+          `<div style="margin-top:8px">${consejo}</div>`);
+      });
+
+      /* ---------- 2. Dilución ---------- */
+      $("dlGo").addEventListener("click", () => {
+        const pre = num("dlPre"), inv = num("dlInv"), pool = num("dlPool") / 100, own = num("dlOwn") / 100;
+        if (!pre || !inv) return out("dlOut", '<span class="bad">Necesito la valoración pre-money y el monto.</span>');
+        const post = pre + inv;
+        const invPct = inv / post;
+        // el pool nuevo se talla pre-inversión (estándar de mercado): diluye solo a los actuales
+        const factor = (1 - invPct) * (1 - pool);
+        const tuPost = own * factor;
+        const dil = own > 0 ? (1 - tuPost / own) * 100 : 0;
+        out("dlOut",
+          `<div class="big">${(tuPost * 100).toFixed(1)}%</div><div>tu participación después de la ronda (cedes un <b class="warn">${dil.toFixed(1)}%</b> de lo que tenías)</div>` +
+          `<table class="cap-table">
+            <tr><th>Concepto</th><th>Valor</th></tr>
+            <tr><td>Post-money</td><td>${usd(post)}</td></tr>
+            <tr><td>Inversionistas nuevos</td><td>${(invPct * 100).toFixed(1)}%</td></tr>
+            ${pool ? `<tr><td>Option pool nuevo</td><td>${(pool * (1 - invPct) * 100).toFixed(1)}%</td></tr>` : ""}
+            <tr><td>Tu participación vale</td><td>${usd(tuPost * post)}</td></tr>
+          </table>
+          <div style="margin-top:8px;font-size:12.5px" class="muted">Referencia: en seed suele cederse 15–25% por ronda. Pool tallado pre-inversión (estándar YC/mercado).</div>`);
+      });
+
+      /* ---------- 3. Ethos Score ---------- */
+      const QS = [
+        ["Duermo 7+ horas la mayoría de noches", "salud"],
+        ["Entreno o me muevo 3+ veces por semana", "salud"],
+        ["Tengo energía estable durante el día", "salud"],
+        ["Sé cuáles son mis 3 prioridades de esta semana", "foco"],
+        ["Puedo trabajar 2+ horas seguidas sin distraerme", "foco"],
+        ["Delego lo que no debo hacer yo", "foco"],
+        ["Mi estrés es manejable (no me desborda)", "mente"],
+        ["Tengo pares/mentores con quienes hablar de verdad", "mente"],
+        ["Desconecto al menos un día a la semana", "mente"],
+        ["Mis finanzas personales no me quitan el sueño", "mente"]
+      ];
+      const vals = new Array(QS.length).fill(0);
+      $("scQs").innerHTML = QS.map((q, i) =>
+        `<div class="score-q"><span>${q[0]}</span><div class="opts">${[1,2,3,4,5].map((v) => `<button data-q="${i}" data-v="${v}">${v}</button>`).join("")}</div></div>`).join("");
+      $("scQs").addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-q]"); if (!b) return;
+        vals[+b.dataset.q] = +b.dataset.v;
+        [...$("scQs").querySelectorAll(`button[data-q="${b.dataset.q}"]`)].forEach((x) => x.classList.toggle("sel", x === b));
+      });
+      $("scGo").addEventListener("click", () => {
+        if (vals.some((v) => !v)) return out("scOut", '<span class="bad">Responde las 10 preguntas para ver tu score.</span>');
+        const score = Math.round((vals.reduce((a, b) => a + b, 0) / 50) * 100);
+        const dims = { salud: 0, foco: 0, mente: 0 };
+        QS.forEach((q, i) => (dims[q[1]] += vals[i]));
+        const peor = Object.entries({ salud: dims.salud / 15, foco: dims.foco / 15, mente: dims.mente / 20 }).sort((a, b) => a[1] - b[1])[0][0];
+        const nombre = { salud: "cuerpo y energía", foco: "foco y ejecución", mente: "mente y soporte" }[peor];
+        const nivel = score >= 80 ? ["ok", "Alto rendimiento sostenible. Eres el founder que Ethos quiere clonar."] :
+          score >= 60 ? ["warn", "Base sólida con fugas de energía. Pequeños ajustes = gran salto."] :
+          ["bad", "Estás construyendo a costa tuya — y eso siempre pasa factura al negocio."];
+        out("scOut",
+          `<div class="big ${nivel[0]}">${score}/100</div><div>${nivel[1]}</div>` +
+          `<div class="bar"><i style="width:${score}%"></i></div>` +
+          `<div style="margin-top:8px">Tu área más débil: <b>${nombre}</b>. Buen tema para tu próximo Core Group o el reto wellness del mes 💬</div>`);
+      });
+
+      /* ---------- 4. Pitch Doctor (IA) ---------- */
+      $("pdGo").addEventListener("click", async () => {
+        const pitch = $("pdPitch").value.trim();
+        if (pitch.length < 30) return out("pdOut", '<span class="bad">Pega un pitch de al menos un par de frases.</span>');
+        const btn = $("pdGo"); btn.disabled = true; btn.textContent = "Analizando… (10-20s)";
+        out("pdOut", "🧠 El inversionista está leyendo tu pitch…");
+        try {
+          const r = await fetch("/api/pitch", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pitch, contexto: $("pdCtx").value.trim() }) });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "Error");
+          out("pdOut", `<div class="pitch-fb">${esc(d.feedback)}</div>`);
+        } catch (e) {
+          out("pdOut", `<span class="bad">${esc(e.message)}</span>`);
+        } finally { btn.disabled = false; btn.textContent = "Analizar mi pitch"; }
+      });
+    })();
+  </script>
+</body>
+</html>
