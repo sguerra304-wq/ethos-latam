@@ -1,6 +1,6 @@
 // ETHOS LATAM — endpoint público (sin auth): capta solicitudes y suscripciones
 // desde la web de marketing y las guarda en el store → visibles en el panel admin.
-import { readDB, writeDB, send, readJson, OWNER_EMAIL } from "../lib/server.mjs";
+import { readDB, writeDB, send, readJson, OWNER_EMAIL, rateLimit, clientIp } from "../lib/server.mjs";
 import { sendEmail, emailWrap, calendlyLink } from "../lib/email.mjs";
 
 const clean = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
@@ -16,6 +16,11 @@ export default async function handler(req, res) {
     db.subscribers = db.subscribers || [];
 
     if (action === "apply") {
+      // Honeypot: campo oculto que los humanos no ven; si viene lleno es un bot.
+      // Se responde "ok" para no darle pistas, pero no se guarda ni se envía nada.
+      if (clean(body.hp, 50) || clean(body._honey, 50)) return send(res, 200, { ok: true, id: "ld_0" });
+      if (!rateLimit("apply:" + clientIp(req), 5, 3600e3))
+        return send(res, 429, { error: "Demasiadas solicitudes desde esta conexión. Intenta más tarde." });
       const email = clean(body.email, 160).toLowerCase();
       const name = clean(body.name, 120);
       if (!name || !validEmail(email)) return send(res, 400, { error: "Nombre y email válido requeridos." });
@@ -42,6 +47,9 @@ export default async function handler(req, res) {
     }
 
     if (action === "subscribe") {
+      if (clean(body.hp, 50) || clean(body._honey, 50)) return send(res, 200, { ok: true });
+      if (!rateLimit("subs:" + clientIp(req), 10, 3600e3))
+        return send(res, 429, { error: "Demasiadas suscripciones desde esta conexión. Intenta más tarde." });
       const email = clean(body.email, 160).toLowerCase();
       if (!validEmail(email)) return send(res, 400, { error: "Email no válido." });
       if (!db.subscribers.some((s) => s.email === email)) {

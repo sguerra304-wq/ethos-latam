@@ -1,5 +1,5 @@
 // ETHOS LATAM — Auth API (email + contraseña, sesión por cookie JWT)
-import { readDB, writeDB, safeUser, hashPw, checkPw, signToken, sessionCookie, clearCookie, getSessionEmail, readJson, send, isOwner, OWNER_EMAIL, uidFor } from "../lib/server.mjs";
+import { readDB, writeDB, safeUser, hashPw, checkPw, signToken, sessionCookie, clearCookie, getSessionEmail, readJson, send, isOwner, OWNER_EMAIL, uidFor, rateLimit, clientIp } from "../lib/server.mjs";
 import { put } from "@vercel/blob";
 import { sendEmail, emailWrap, calendlyLink } from "../lib/email.mjs";
 
@@ -28,8 +28,10 @@ export default async function handler(req, res) {
     }
 
     if (action === "signup") {
+      if (!rateLimit("signup:" + clientIp(req), 5, 3600e3))
+        return send(res, 429, { error: "Demasiados registros desde esta conexión. Intenta en una hora." });
       if (!email || !body.password) return send(res, 400, { error: "Email y contraseña requeridos." });
-      if (body.password.length < 6) return send(res, 400, { error: "La contraseña debe tener al menos 6 caracteres." });
+      if (body.password.length < 6 || body.password.length > 100) return send(res, 400, { error: "La contraseña debe tener entre 6 y 100 caracteres." });
       if (!body.country || !body.document || !body.age || !body.profession)
         return send(res, 400, { error: "Faltan datos: país, documento, edad y profesión son obligatorios." });
       if (!body.traccion)
@@ -74,9 +76,13 @@ export default async function handler(req, res) {
     }
 
     if (action === "login") {
+      // Anti fuerza-bruta: por IP (ataques distribuidos a muchas cuentas) y por
+      // cuenta (ataques a un email concreto desde varias IPs de una instancia).
+      if (!rateLimit("login-ip:" + clientIp(req), 20, 600e3) || !rateLimit("login-em:" + email, 8, 600e3))
+        return send(res, 429, { error: "Demasiados intentos. Espera 10 minutos y vuelve a intentarlo." });
       const db = await readDB();
       const user = db.users[email];
-      if (!user || !(await checkPw(body.password || "", user.passHash))) {
+      if (!user || !(await checkPw(String(body.password || "").slice(0, 100), user.passHash))) {
         return send(res, 401, { error: "Email o contraseña incorrectos." });
       }
       const st = user.status || "approved"; // usuarios antiguos sin status = aprobados
@@ -106,7 +112,7 @@ export default async function handler(req, res) {
     if (action === "changePassword") {
       const sEmail = getSessionEmail(req);
       if (!sEmail) return send(res, 401, { error: "No autenticado." });
-      if (!body.next || body.next.length < 6) return send(res, 400, { error: "La nueva contraseña debe tener al menos 6 caracteres." });
+      if (!body.next || body.next.length < 6 || body.next.length > 100) return send(res, 400, { error: "La nueva contraseña debe tener entre 6 y 100 caracteres." });
       const db = await readDB();
       const user = db.users[sEmail];
       if (!user || !(await checkPw(body.current || "", user.passHash))) return send(res, 401, { error: "La contraseña actual no es correcta." });
