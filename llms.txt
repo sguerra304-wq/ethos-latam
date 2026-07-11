@@ -50,6 +50,8 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - "Alternativa a EO, YPO y Vistage en español (LATAM)": https://ethoslatam.com/alternativa-a-eo-ypo-vistage
 - "¿Cuánto cuesta un club de founders? Precios 2026 (EO, YPO, Vistage, Hampton)": https://ethoslatam.com/cuanto-cuesta-un-club-de-founders
 - "Negocio y bienestar: por qué la salud del founder es ventaja competitiva": https://ethoslatam.com/negocio-y-bienestar-founder
+- "Comunidad para founders fintech en LATAM": https://ethoslatam.com/comunidad-para-founders-fintech
+- Biblioteca de guías para founders (índice): https://ethoslatam.com/guias
 - Contenido completo para LLMs: https://ethoslatam.com/llms-full.txt
 
 ## Páginas por ciudad (presencia local)
