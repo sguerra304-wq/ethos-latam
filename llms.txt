@@ -45,6 +45,11 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - Comparativa (Ethos vs. otras opciones): https://ethoslatam.com/comparativa-club-de-founders
 - Datos sobre burnout y soledad del founder (con fuentes): https://ethoslatam.com/datos-founders-latam
 - Guía "Mejores comunidades de founders 2026" (EO vs YPO vs Vistage vs Hampton vs Ethos): https://ethoslatam.com/mejores-comunidades-de-founders
+- Guía "¿Qué es un mastermind de negocios?": https://ethoslatam.com/que-es-un-mastermind
+- Guía "¿Qué es un grupo de pares (peer group) para CEOs?": https://ethoslatam.com/grupos-de-pares-para-ceos
+- "Alternativa a EO, YPO y Vistage en español (LATAM)": https://ethoslatam.com/alternativa-a-eo-ypo-vistage
+- "¿Cuánto cuesta un club de founders? Precios 2026 (EO, YPO, Vistage, Hampton)": https://ethoslatam.com/cuanto-cuesta-un-club-de-founders
+- "Negocio y bienestar: por qué la salud del founder es ventaja competitiva": https://ethoslatam.com/negocio-y-bienestar-founder
 - Contenido completo para LLMs: https://ethoslatam.com/llms-full.txt
 
 ## Páginas por ciudad (presencia local)
