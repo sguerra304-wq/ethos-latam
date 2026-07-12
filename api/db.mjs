@@ -15,6 +15,7 @@ export default async function handler(req, res) {
     db.groups = db.groups || [];
     db.leads = db.leads || [];
     db.subscribers = db.subscribers || [];
+    db.testimonials = db.testimonials || [];
     const me = db.users[email];
     if (!me) return send(res, 401, { error: "Sesión no válida." });
     const isAdmin = !!me.isAdmin || isOwner(email);
@@ -122,6 +123,7 @@ export default async function handler(req, res) {
         members,
         leads: isAdmin ? db.leads : [],
         subscribers: isAdmin ? db.subscribers : [],
+        testimonials: isAdmin ? db.testimonials : [],
         myGroup,
         groups,
         leaderboard, myRank, myPoints, coffee, spotlight,
@@ -322,6 +324,18 @@ export default async function handler(req, res) {
         return send(res, 200, { ok: true, status: st });
       }
       case "deleteSubscriber": { if (!needAdmin()) return; db.subscribers = (db.subscribers || []).filter((x) => x.email !== body.email); await writeDB(db); return send(res, 200, { ok: true }); }
+      /* ----- admin: testimonios REALES (se muestran en la home pública si approved) ----- */
+      case "saveTestimonial": {
+        if (!needAdmin()) return;
+        const t = body.item || {};
+        const clean = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
+        const rec = { name: clean(t.name, 80), role: clean(t.role, 80), text: clean(t.text, 600), approved: t.approved !== false };
+        if (!rec.name || !rec.text) return send(res, 400, { error: "Nombre y testimonio son obligatorios." });
+        if (t.id) { const i = db.testimonials.findIndex((x) => x.id === t.id); if (i >= 0) db.testimonials[i] = { ...db.testimonials[i], ...rec }; }
+        else { rec.id = rid("ts"); rec.ts = Date.now(); db.testimonials.unshift(rec); }
+        await writeDB(db); return send(res, 200, { ok: true });
+      }
+      case "deleteTestimonial": { if (!needAdmin()) return; db.testimonials = (db.testimonials || []).filter((x) => x.id !== body.id); await writeDB(db); return send(res, 200, { ok: true }); }
       /* ----- mensajes directos (DMs) ----- */
       case "sendDM": {
         const text = String(body.text || "").trim().slice(0, 2000);

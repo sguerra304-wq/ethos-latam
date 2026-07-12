@@ -7,8 +7,19 @@ const clean = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
 const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return send(res, 405, { error: "Method not allowed" });
   const action = new URL(req.url, "http://localhost").searchParams.get("action");
+  // Lectura pública: testimonios aprobados para la home (sin auth, sin PII).
+  if (req.method === "GET") {
+    if (action !== "testimonials") return send(res, 405, { error: "Method not allowed" });
+    try {
+      const db = await readDB();
+      const list = (db.testimonials || []).filter((t) => t.approved !== false)
+        .map((t) => ({ name: t.name, role: t.role || "", text: t.text }));
+      res.setHeader("Cache-Control", "public, max-age=120");
+      return send(res, 200, { testimonials: list });
+    } catch (e) { return send(res, 200, { testimonials: [] }); }
+  }
+  if (req.method !== "POST") return send(res, 405, { error: "Method not allowed" });
   try {
     const body = await readJson(req);
     const db = await readDB();

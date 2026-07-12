@@ -40,6 +40,10 @@
     async listSubscribers() { return window.EthData.subscribers(); },
     async deleteSubscriber(email) { return after(await post("deleteSubscriber", { email })); },
 
+    async listTestimonials() { return window.EthData.testimonials(); },
+    async saveTestimonial(item) { return after(await post("saveTestimonial", { item })); },
+    async deleteTestimonial(id) { return after(await post("deleteTestimonial", { id })); },
+
     async exportDB() { return post("exportDB", {}); }
   };
 })();

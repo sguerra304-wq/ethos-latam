@@ -34,6 +34,7 @@
         <button data-tab="members">Miembros</button>
         <button data-tab="groups">Grupos</button>
         <button data-tab="web">Web <span id="webCount"></span></button>
+        <button data-tab="testimonials">Testimonios</button>
         <button data-tab="settings">Ajustes</button>
       </div>
 
@@ -93,6 +94,12 @@
         <div id="leadsList"></div>
         <div class="sec-head" style="margin-top:32px"><h3>Suscriptores de la newsletter <span id="subCount" class="muted" style="font-size:14px; font-weight:400"></span></h3><button class="btn-xs" id="expSubs">⬇ Exportar CSV</button></div>
         <div id="subsList"></div>
+      </section>
+
+      <section class="admin-sec" id="sec-testimonials">
+        <div class="sec-head"><h3>Testimonios reales</h3><button class="btn btn-primary" id="newTestimonial">+ Nuevo testimonio</button></div>
+        <p class="page-sub" style="margin-bottom:18px">Testimonios de miembros <b>reales</b>. Los aprobados se muestran automáticamente en la portada (ethoslatam.com). Pide permiso al miembro antes de publicar su nombre — nunca inventes uno.</p>
+        <div id="testimonialsList"></div>
       </section>
 
       <section class="admin-sec" id="sec-settings">
@@ -254,6 +261,27 @@
           </div>`).join("") : '<p class="muted">No hay recursos.</p>';
       }
 
+      /* ---------- Testimonios reales ---------- */
+      async function renderTestimonials() {
+        const list = await EthAdmin.listTestimonials();
+        $("testimonialsList").innerHTML = list.length ? list.map((t) => `
+          <div class="admin-row">
+            <div class="ri"><h4>${esc(t.name)} ${t.approved === false ? '<span class="status-tag pending">Oculto</span>' : '<span class="status-tag approved">En portada</span>'}</h4>
+              <div class="meta">${t.role ? `<span>${esc(t.role)}</span><span>·</span>` : ""}<span>"${esc((t.text || "").slice(0, 90))}${(t.text || "").length > 90 ? "…" : ""}"</span></div>
+            </div>
+            <div class="ra"><button class="btn-xs" data-edit-ts="${t.id}">Editar</button><button class="btn-xs danger" data-del-ts="${t.id}">Borrar</button></div>
+          </div>`).join("") : '<p class="muted">Aún no hay testimonios. Cuando un miembro real te dé uno, añádelo aquí y aparecerá en la portada.</p>';
+      }
+      function testimonialForm(t) {
+        t = t || {};
+        return `
+          <input type="hidden" name="id" value="${esc(t.id || "")}">
+          <div class="field"><label>Nombre del miembro (real)</label><input name="name" value="${esc(t.name || "")}" maxlength="80" required></div>
+          <div class="field"><label>Rol / empresa (ej: CEO · Fintech)</label><input name="role" value="${esc(t.role || "")}" maxlength="80"></div>
+          <div class="field"><label>Testimonio</label><textarea name="text" maxlength="600" required>${esc(t.text || "")}</textarea></div>
+          <div class="field"><label><input type="checkbox" name="approved" ${t.approved === false ? "" : "checked"} style="width:auto;margin-right:8px">Mostrar en la portada</label></div>`;
+      }
+
       /* ---------- Beneficios ---------- */
       async function renderPerks() {
         const list = await EthAdmin.listPerks();
@@ -402,6 +430,7 @@
       $("newEvent").onclick = () => { modalKind = "event"; openModal("Nuevo evento", eventForm()); };
       $("newResource").onclick = () => { modalKind = "resource"; openModal("Nuevo recurso", resourceForm()); };
       $("newPerk").onclick = () => { modalKind = "perk"; openModal("Nuevo beneficio", perkForm()); };
+      $("newTestimonial").onclick = () => { modalKind = "testimonial"; openModal("Nuevo testimonio", testimonialForm()); };
 
       $("modalForm").addEventListener("click", (e) => { if (e.target.id === "mCancel") closeModal(); });
       $("modalForm").addEventListener("submit", async (e) => {
@@ -410,6 +439,7 @@
         if (modalKind === "event") { const r = await EthAdmin.saveEvent(d); EthShell.toast(r.ok ? "Evento guardado ✦" : (r.error || "Error")); await renderEvents(); }
         else if (modalKind === "perk") { const r = await EthAdmin.savePerk(d); EthShell.toast(r.ok ? "Beneficio guardado ✦" : (r.error || "Error")); await renderPerks(); }
         else if (modalKind === "group") { const r = await EthAdmin.saveGroup(groupData()); EthShell.toast(r.ok ? "Grupo guardado ✦ Los miembros ya lo ven en \"Mi grupo\"" : (r.error || "Error")); await renderGroups(); }
+        else if (modalKind === "testimonial") { const cb = $("modalForm").querySelector('[name="approved"]'); d.approved = !!(cb && cb.checked); const r = await EthAdmin.saveTestimonial(d); EthShell.toast(r.ok ? "Testimonio guardado ✦ Ya aparece en la portada si está aprobado" : (r.error || "Error")); await renderTestimonials(); }
         else { const r = await EthAdmin.saveResource(d); EthShell.toast(r.ok ? "Recurso guardado ✦" : (r.error || "Error")); await renderResources(); }
         closeModal();
       });
@@ -426,6 +456,8 @@
         else if (d.editEv) { const ev = (await EthAdmin.listEvents()).find((x) => x.id === d.editEv); modalKind = "event"; openModal("Editar evento", eventForm(ev)); }
         else if (d.delRes) { if (confirm("¿Borrar este recurso?")) { await EthAdmin.deleteResource(d.delRes); EthShell.toast("Recurso borrado"); renderResources(); } }
         else if (d.editRes) { const r = (await EthAdmin.listResources()).find((x) => x.id === d.editRes); modalKind = "resource"; openModal("Editar recurso", resourceForm(r)); }
+        else if (d.delTs) { if (confirm("¿Borrar este testimonio?")) { await EthAdmin.deleteTestimonial(d.delTs); EthShell.toast("Testimonio borrado"); renderTestimonials(); } }
+        else if (d.editTs) { const t = (await EthAdmin.listTestimonials()).find((x) => x.id === d.editTs); modalKind = "testimonial"; openModal("Editar testimonio", testimonialForm(t)); }
         else if (d.delPk) { if (confirm("¿Borrar este beneficio?")) { await EthAdmin.deletePerk(d.delPk); EthShell.toast("Beneficio borrado"); renderPerks(); } }
         else if (d.editPk) { const p = (await EthAdmin.listPerks()).find((x) => x.id === d.editPk); modalKind = "perk"; openModal("Editar beneficio", perkForm(p)); }
         else if (d.delMem) { if (confirm("¿Quitar a este miembro?")) { await EthAdmin.removeMember(d.delMem); EthShell.toast("Miembro quitado"); renderMembers(); } }
@@ -452,7 +484,7 @@
       $("expLeads").onclick = async () => { const leads = await EthAdmin.listLeads(); if (!leads.length) { EthShell.toast("No hay solicitudes"); return; } download("solicitudes-ethos.csv", toCSV(leads.map((l) => ({ ...l, fecha: new Date(l.ts).toISOString().slice(0, 10) })), [{ h: "Fecha", k: "fecha" }, { h: "Nombre", k: "name" }, { h: "Email", k: "email" }, { h: "Empresa", k: "company" }, { h: "Rol", k: "role" }, { h: "Tracción", k: "traccion" }, { h: "Plan", k: "plan" }, { h: "Link", k: "link" }, { h: "Mensaje", k: "msg" }])); EthShell.toast("CSV descargado ⬇"); };
       $("expSubs").onclick = async () => { const subs = await EthAdmin.listSubscribers(); if (!subs.length) { EthShell.toast("No hay suscriptores"); return; } download("suscriptores-ethos.csv", toCSV(subs.map((s) => ({ email: s.email, fecha: new Date(s.ts).toISOString().slice(0, 10) })), [{ h: "Email", k: "email" }, { h: "Fecha", k: "fecha" }])); EthShell.toast("CSV descargado ⬇"); };
 
-      await Promise.all([renderOverview(), renderApps(), renderEvents(), renderResources(), renderPerks(), renderMembers(), renderGroups(), renderWeb(), renderSettings()]);
+      await Promise.all([renderOverview(), renderApps(), renderEvents(), renderResources(), renderPerks(), renderMembers(), renderGroups(), renderWeb(), renderTestimonials(), renderSettings()]);
     })();
   </script>
 </body>

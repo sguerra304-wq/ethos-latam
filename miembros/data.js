@@ -87,6 +87,7 @@
     /* ----- captación web (admin) ----- */
     async leads() { return (await ensure()).leads || []; },
     async subscribers() { return (await ensure()).subscribers || []; },
+    async testimonials() { return (await ensure()).testimonials || []; },
 
     /* ----- core groups ----- */
     async myGroup() { return (await ensure()).myGroup || null; },

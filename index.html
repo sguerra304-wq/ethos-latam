@@ -374,46 +374,24 @@
       </div>
     </section>
 
-    <!-- ===== Testimonios ===== -->
-    <section class="section-pad wrap">
+    <!-- ===== Prueba social honesta (Generación fundadora) + slot para testimonios reales ===== -->
+    <section class="section-pad wrap" id="socialProof">
       <div class="section-head center reveal">
-        <span class="eyebrow">La comunidad habla</span>
-        <h2>Founders que ya viven el club</h2>
+        <span class="eyebrow">Generación fundadora</span>
+        <h2>Sé de los <span class="text-grad">primeros</span> en Ethos LATAM</h2>
+        <p class="lead" style="max-width:720px;margin:14px auto 0">Estamos formando la primera generación de miembros en las seis ciudades. Entrar ahora significa ayudar a moldear la comunidad desde el día uno — y quedar, para siempre, como miembro fundador.</p>
       </div>
-      <div class="testi-carousel reveal">
-        <div class="testi-track">
-          <figure class="quote-card">
-            <div class="stars">★★★★★</div>
-            <p>"En 3 meses cerré una ronda con un inversionista que conocí en una cena. Pero lo que más valoro es haber recuperado mi energía: dejé de fundir mi salud por la empresa."</p>
-            <figcaption class="q-author"><img class="av" src="/assets/img/testi-julia.webp" alt="Julia Méndez" width="48" height="48" loading="lazy" decoding="async"><span><b>Julia Méndez</b><span>CEO · SaaS B2B</span></span></figcaption>
-          </figure>
-          <figure class="quote-card">
-            <div class="stars">★★★★★</div>
-            <p>"El nivel de los founders es brutal. Es la primera comunidad donde no tengo que explicar por qué entreno a las 6am y trabajo 12 horas: aquí todos lo entienden."</p>
-            <figcaption class="q-author"><img class="av" src="/assets/img/testi-andres.webp" alt="Andrés Lozano" width="48" height="48" loading="lazy" decoding="async"><span><b>Andrés Lozano</b><span>Founder · Fintech</span></span></figcaption>
-          </figure>
-          <figure class="quote-card">
-            <div class="stars">★★★★★</div>
-            <p>"Como inversionista, Ethos LATAM es mi mejor fuente de deal flow. Founders sanos, enfocados y con disciplina. Justo el perfil en el que quiero invertir."</p>
-            <figcaption class="q-author"><img class="av" src="/assets/img/testi-rocio.webp" alt="Rocío Cano" width="48" height="48" loading="lazy" decoding="async"><span><b>Rocío Cano</b><span>Angel Investor</span></span></figcaption>
-          </figure>
-          <figure class="quote-card">
-            <div class="stars">★★★★★</div>
-            <p>"Llegué quemado y pensando en cerrar. Un mastermind me cambió el rumbo: hoy facturo el doble y trabajo menos horas. Esta gente te sostiene de verdad."</p>
-            <figcaption class="q-author"><img class="av" src="/assets/img/testi-marcos.webp" alt="Marcos Pérez" width="48" height="48" loading="lazy" decoding="async"><span><b>Marcos Pérez</b><span>Founder · eCommerce</span></span></figcaption>
-          </figure>
-          <figure class="quote-card">
-            <div class="stars">★★★★★</div>
-            <p>"El retiro de wellness fue un antes y un después. Volví con la cabeza clara, dos socios nuevos y un plan a 12 meses. No conozco nada igual."</p>
-            <figcaption class="q-author"><img class="av" src="/assets/img/testi-lucia.webp" alt="Lucía Romero" width="48" height="48" loading="lazy" decoding="async"><span><b>Lucía Romero</b><span>CEO · HealthTech</span></span></figcaption>
-          </figure>
-          <figure class="quote-card">
-            <div class="stars">★★★★★</div>
-            <p>"Pensé que sería otro grupo de networking vacío. Es lo opuesto: relaciones reales, founders que dan antes de pedir y eventos a los que de verdad quieres ir."</p>
-            <figcaption class="q-author"><img class="av" src="/assets/img/testi-diego.webp" alt="Diego Fuentes" width="48" height="48" loading="lazy" decoding="async"><span><b>Diego Fuentes</b><span>Founder · IA</span></span></figcaption>
-          </figure>
-        </div>
+      <div class="grid-3" style="margin-top:38px">
+        <article class="card reveal"><span class="card-num">01</span><h3>Ventaja de fundador</h3><p>Los primeros miembros definen la cultura, tienen acceso directo al equipo y condiciones que no se repetirán cuando la comunidad crezca.</p></article>
+        <article class="card v reveal d1"><span class="card-num">02</span><h3>Curado desde el día uno</h3><p>Acceso por aplicación y entrevista. La sala se cuida desde el primer miembro — no cuando ya es tarde.</p></article>
+        <article class="card c reveal d2"><span class="card-num">03</span><h3>Negocio y salud, juntos</h3><p>El único club de LATAM que une tu próxima ronda con tu energía y tu longevidad. Ese es el estándar desde el inicio.</p></article>
       </div>
+      <div class="stats" style="margin-top:40px">
+        <div class="stat reveal"><div class="n">72%</div><div class="l">de los founders reporta impacto del emprendimiento en su salud mental <span class="muted">(Startup Snapshot, 2023)</span></div></div>
+        <div class="stat reveal d1"><div class="n">54%</div><div class="l">sufrió burnout en los últimos 12 meses <span class="muted">(Sifted, 2025)</span></div></div>
+        <div class="stat reveal d2"><div class="n">49%</div><div class="l">reporta una condición de salud mental, vs. ~20% de la población general <span class="muted">(UCSF)</span></div></div>
+      </div>
+      <p class="muted" style="text-align:center;margin-top:20px">Por eso existe Ethos: rodearte de pares y cuidar tu energía no es un lujo, es infraestructura. <a href="/datos-founders-latam">Ver los datos con fuente →</a></p>
     </section>
 
     <!-- ===== FAQ ===== -->
@@ -500,5 +478,31 @@
   </footer>
 
   <script src="/assets/js/main.js"></script>
+  <!-- Testimonios REALES: si el admin aprobó alguno, se muestran arriba del bloque de generación fundadora. Sin fabricar nada. -->
+  <script>
+    (async function () {
+      try {
+        const r = await fetch("/api/public?action=testimonials");
+        if (!r.ok) return;
+        const d = await r.json();
+        const list = (d.testimonials || []).filter((t) => t && t.text && t.name);
+        if (!list.length) return; // sin testimonios reales → se mantiene el bloque honesto
+        const sec = document.getElementById("socialProof");
+        if (!sec) return;
+        const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        const av = "display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:var(--violet,#6C3CE0);color:#fff;font-weight:700;font-family:var(--font-display,inherit)";
+        const cards = list.slice(0, 9).map((t) => `
+          <figure class="quote-card">
+            <div class="stars">★★★★★</div>
+            <p>"${esc(t.text)}"</p>
+            <figcaption class="q-author"><span class="av" aria-hidden="true" style="${av}">${esc((t.name || "?").trim().charAt(0).toUpperCase())}</span><span><b>${esc(t.name)}</b><span>${esc(t.role || "")}</span></span></figcaption>
+          </figure>`).join("");
+        const block = document.createElement("div");
+        block.style.marginBottom = "56px";
+        block.innerHTML = `<div class="section-head center"><span class="eyebrow">La comunidad habla</span><h2>Lo que dicen nuestros miembros</h2></div><div class="testi-carousel"><div class="testi-track">${cards}</div></div>`;
+        sec.prepend(block);
+      } catch (e) {}
+    })();
+  </script>
 </body>
 </html>
