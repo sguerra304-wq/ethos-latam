@@ -383,7 +383,8 @@
           </div>
           <div class="field-row">
             <div class="field"><label>Plan mínimo</label><select name="plan">${sel(["Starter", "Pro", "Elite"], ev.plan || "Pro")}</select></div>
-            <div class="field"><label>Plazas</label><input name="seats" type="number" value="${esc(ev.seats || 20)}"></div>
+            <div class="field"><label>Aforo (plazas)</label><input name="seats" type="number" min="0" value="${esc(ev.seats || 20)}"></div>
+            <div class="field"><label>Ya ocupadas</label><input name="reserved" type="number" min="0" value="${esc(ev.reserved || 0)}" title="Plazas ya tomadas fuera de la plataforma (ej: inscritos manuales)"></div>
           </div>
           <div class="field"><label>Imagen (ruta)</label><input name="img" value="${esc(ev.img || "../assets/img/mastermind.webp")}"></div>
           <div class="field"><label>Descripción</label><textarea name="desc">${esc(ev.desc || "")}</textarea></div>

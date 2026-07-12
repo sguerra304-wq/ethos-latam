@@ -16,6 +16,7 @@ export default async function handler(req, res) {
     db.leads = db.leads || [];
     db.subscribers = db.subscribers || [];
     db.testimonials = db.testimonials || [];
+    db.waitlists = db.waitlists || {};   // { eventId: [email, email, ...] } — orden = cola
     const me = db.users[email];
     if (!me) return send(res, 401, { error: "Sesión no válida." });
     const isAdmin = !!me.isAdmin || isOwner(email);
@@ -78,7 +79,26 @@ export default async function handler(req, res) {
         const u = db.users[em]; if (!u || (u.status || "approved") !== "approved") return;
         (ids || []).forEach((id) => { (attByEvent[id] = attByEvent[id] || []).push({ uid: uidFor(em), name: u.name, initials: initials(u.name) }); });
       });
-      const events = (db.events || []).map((e) => ({ ...e, rsvpCount: (attByEvent[e.id] || []).length, attendees: (attByEvent[e.id] || []).slice(0, 50) }));
+      const events = (db.events || []).map((e) => {
+        const att = attByEvent[e.id] || [];
+        const rsvpCount = att.length;
+        const reserved = Number(e.reserved) || 0;          // plazas ya ocupadas fuera de la plataforma (ej: inscritos manuales)
+        const seats = Number(e.seats) || 0;
+        const taken = reserved + rsvpCount;
+        const wl = db.waitlists[e.id] || [];
+        return {
+          ...e,
+          seats: seats || undefined,
+          reserved,
+          rsvpCount,
+          taken,
+          remaining: seats ? Math.max(0, seats - taken) : null,
+          full: seats ? taken >= seats : false,
+          waitlistCount: wl.length,
+          iWaitlisted: wl.includes(email),
+          attendees: att.slice(0, 50)
+        };
+      });
       // ---- Gamificación: puntos + leaderboard (calculado del uso real, sin estado extra) ----
       const approvedUsers = Object.values(db.users).filter((u) => (u.status || "approved") === "approved");
       const pointsFor = (u) => {
@@ -190,10 +210,33 @@ export default async function handler(req, res) {
       /* ----- eventos ----- */
       case "toggleRsvp": {
         db.rsvps[email] = db.rsvps[email] || [];
-        const i = db.rsvps[email].indexOf(body.eventId);
-        let going;
-        if (i >= 0) { db.rsvps[email].splice(i, 1); going = false; } else { db.rsvps[email].push(body.eventId); going = true; }
-        await writeDB(db); return send(res, 200, { going });
+        db.waitlists = db.waitlists || {};
+        const evId = body.eventId;
+        const ev = (db.events || []).find((x) => x.id === evId);
+        const wl = db.waitlists[evId] = db.waitlists[evId] || [];
+        const hasRsvp = db.rsvps[email].includes(evId);
+        const wlIdx = wl.indexOf(email);
+
+        // Aforo actual: reservas externas + RSVPs reales de todos los usuarios.
+        const rsvpTotal = Object.values(db.rsvps).filter((arr) => (arr || []).includes(evId)).length;
+        const seats = ev ? Number(ev.seats) || 0 : 0;
+        const reserved = ev ? Number(ev.reserved) || 0 : 0;
+        const isFull = seats ? (reserved + rsvpTotal) >= seats : false;
+
+        if (hasRsvp) {
+          // Cancela su plaza → libera cupo → promueve al primero de la lista de espera y lo avisa.
+          db.rsvps[email] = db.rsvps[email].filter((x) => x !== evId);
+          if (wl.length) {
+            const next = wl.shift();
+            db.rsvps[next] = db.rsvps[next] || [];
+            if (!db.rsvps[next].includes(evId)) db.rsvps[next].push(evId);
+            pushNotif(db, next, { type: "event", text: `🎟️ ¡Se liberó una plaza! Ya estás dentro de "${ev ? ev.title : "un evento"}"`, href: "eventos.html" });
+          }
+          await writeDB(db); return send(res, 200, { going: false, status: "cancelled" });
+        }
+        if (wlIdx >= 0) { wl.splice(wlIdx, 1); await writeDB(db); return send(res, 200, { going: false, status: "left_waitlist" }); }
+        if (isFull) { wl.push(email); await writeDB(db); return send(res, 200, { going: false, waitlisted: true, status: "waitlisted", waitlistPos: wl.length }); }
+        db.rsvps[email].push(evId); await writeDB(db); return send(res, 200, { going: true, status: "confirmed" });
       }
       /* ----- admin: eventos ----- */
       case "saveEvent": {

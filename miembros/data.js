@@ -46,7 +46,7 @@
       const d = await post("toggleRsvp", { eventId });
       if (snap) { snap.myRsvps = snap.myRsvps || []; const i = snap.myRsvps.indexOf(eventId);
         if (d.going && i < 0) snap.myRsvps.push(eventId); if (!d.going && i >= 0) snap.myRsvps.splice(i, 1); }
-      return d.going;
+      return d;   // { going, status: confirmed|waitlisted|cancelled|left_waitlist, waitlistPos? }
     },
     async addPost(p, user) {
       const d = await post("addPost", { channel: p.channel, text: p.text });

@@ -69,11 +69,16 @@
         );
         list.innerHTML = rows.length ? rows.map((e) => {
           const d = EthShell.fmtDate(e.date);
-          const cnt = e.rsvpCount || 0, nearFull = e.seats && cnt >= e.seats * 0.8;
+          const going = rsvps.has(e.id);
+          const taken = e.taken != null ? e.taken : (e.rsvpCount || 0);
+          const nearFull = e.seats && !e.full && e.remaining != null && e.remaining <= Math.max(2, Math.round(e.seats * 0.2));
+          const pill = e.full ? '<span class="full-pill">Lleno</span>' : (nearFull ? '<span class="full-pill">Casi lleno</span>' : "");
+          const cap = e.seats ? `<span>·</span><span>👥 ${taken}/${e.seats}${e.full ? " · lleno" : (e.remaining != null ? ` · quedan ${e.remaining}` : "")}</span>` : "";
+          const btnTxt = going ? "✓ Asistes" : (e.iWaitlisted ? "En espera" : (e.full ? "Lista de espera" : "Reservar"));
           return `<div class="ev-item ev-click" data-open="${e.id}" style="grid-template-columns:58px 1fr auto">
               <div class="d"><b>${d.day}</b><span>${d.mon}</span></div>
-              <div style="min-width:0"><h4>${esc(e.title)} ${nearFull ? '<span class="full-pill">Casi lleno</span>' : ""}</h4><div class="meta"><span>${esc(e.type)}</span><span>·</span><span>${esc(e.city)}</span><span>·</span><span>${esc(e.mode)}</span><span>·</span><span>Plan ${esc(e.plan)}+</span>${e.seats ? `<span>·</span><span>👥 ${cnt}/${e.seats} plazas</span>` : ""}</div>${stack(e)}</div>
-              <button class="btn-rsvp ${rsvps.has(e.id) ? "on" : ""}" data-id="${e.id}">${rsvps.has(e.id) ? "✓ Asistes" : "Reservar"}</button>
+              <div style="min-width:0"><h4>${esc(e.title)} ${pill}</h4><div class="meta"><span>${esc(e.type)}</span><span>·</span><span>${esc(e.city)}</span><span>·</span><span>${esc(e.mode)}</span><span>·</span><span>Plan ${esc(e.plan)}+</span>${cap}</div>${stack(e)}</div>
+              <button class="btn-rsvp ${going ? "on" : (e.iWaitlisted ? "wait" : "")}" data-id="${e.id}">${btnTxt}</button>
             </div>`;
         }).join("") : '<p class="muted">No hay eventos que coincidan con tu búsqueda.</p>';
       }
@@ -82,14 +87,17 @@
 
       function openEvent(e) {
         const d = EthShell.fmtDate(e.date), cnt = e.rsvpCount || 0, going = rsvps.has(e.id);
+        const taken = e.taken != null ? e.taken : cnt, waitl = e.iWaitlisted;
+        const btnState = going ? { c: "btn-ghost", t: "✓ Asistes — cancelar" } : waitl ? { c: "btn-ghost", t: "En lista de espera — salir" } : e.full ? { c: "btn-primary", t: "Unirse a la lista de espera" } : { c: "btn-primary", t: "Reservar plaza" };
+        const capLine = e.seats ? `<span style="color:${e.full ? "var(--coral)" : "var(--muted)"}">${e.full ? "Lleno" : `Quedan ${e.remaining} de ${e.seats}`} · ${taken} ocupadas</span>${e.waitlistCount ? ` <span class="muted">· ${e.waitlistCount} en lista de espera</span>` : ""}` : "";
         body.innerHTML = `<div class="ev-detail">
           ${e.img ? `<div class="media-frame" style="aspect-ratio:16/9; margin-bottom:16px"><img src="${esc(e.img)}" alt="" style="width:100%;height:100%;object-fit:cover"></div>` : ""}
           <h3 style="margin-bottom:6px">${esc(e.title)}</h3>
           <div class="meta" style="color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px"><span>${d.day} ${d.mon}</span><span>·</span><span>${esc(e.type)}</span><span>·</span><span>${esc(e.city)}</span><span>·</span><span>${esc(e.mode)}</span><span>·</span><span>Plan ${esc(e.plan)}+</span></div>
           <p style="color:var(--ink-soft); margin-bottom:18px">${esc(e.desc || "")}</p>
-          <h4 style="font-size:1rem; margin-bottom:12px">${cnt ? cnt + (cnt === 1 ? " founder asiste" : " founders asisten") : "Sé el primero en reservar"}${e.seats ? ` · ${e.seats} plazas` : ""}</h4>
+          <h4 style="font-size:1rem; margin-bottom:6px">${cnt ? cnt + (cnt === 1 ? " founder asiste" : " founders asisten") : "Sé el primero en reservar"}</h4>${capLine ? `<p style="margin:0 0 12px;font-size:14px">${capLine}</p>` : ""}
           <div class="att-list">${(e.attendees || []).map((a) => `<a class="att-chip" href="mensajes.html?u=${esc(a.uid)}"><span class="att">${esc(a.initials)}</span>${esc(a.name)}</a>`).join("") || '<span class="muted">Aún nadie ha confirmado. ¡Anímate!</span>'}</div>
-          <div class="modal-actions" style="margin-top:22px"><button class="btn btn-ghost" data-close>Cerrar</button><button class="btn ${going ? "btn-ghost" : "btn-primary"}" data-rsvp="${e.id}">${going ? "✓ Asistes — cancelar" : "Reservar plaza"}</button></div>
+          <div class="modal-actions" style="margin-top:22px"><button class="btn btn-ghost" data-close>Cerrar</button><button class="btn ${btnState.c}" data-rsvp="${e.id}">${btnState.t}</button></div>
         </div>`;
         modal.classList.add("on");
       }
@@ -97,10 +105,14 @@
       modal.addEventListener("click", (ev) => { if (ev.target === modal) closeModal(); });
 
       async function toggle(id) {
-        const now = await EthData.toggleRsvp(id);
+        const r = await EthData.toggleRsvp(id);
         await load(); render();
-        EthShell.toast(now ? "¡Plaza reservada! 🎉" : "Reserva cancelada.");
-        return now;
+        const msg = (r && r.status === "confirmed") ? "¡Plaza reservada! 🎉"
+          : (r && r.status === "waitlisted") ? `Estás en lista de espera (puesto ${r.waitlistPos}). Te avisamos si se libera una plaza.`
+          : (r && r.status === "left_waitlist") ? "Saliste de la lista de espera."
+          : "Reserva cancelada.";
+        EthShell.toast(msg);
+        return r;
       }
 
       list.addEventListener("click", async (ev) => {
