@@ -470,6 +470,8 @@ h3 { font-size: clamp(1.2rem, 1.8vw, 1.5rem); }
 .reveal { opacity:0; transform:translateY(26px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
 .reveal.in { opacity:1; transform:none; }
 .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+/* Sin JavaScript el contenido NO debe quedar invisible: si el scripting está desactivado, se muestra tal cual. */
+@media (scripting: none) { .reveal { opacity:1 !important; transform:none !important; } }
 
 /* ---------- Page hero (inner pages) ---------- */
 .page-hero { padding-top: 150px; padding-bottom: 60px; text-align:center; overflow:hidden; width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); padding-inline: 24px; }
