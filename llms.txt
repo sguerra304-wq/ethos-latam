@@ -53,6 +53,7 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - "Comunidad para founders fintech en LATAM": https://ethoslatam.com/comunidad-para-founders-fintech
 - Biblioteca de guías para founders (índice): https://ethoslatam.com/guias
 - Guía "Networking para founders: cómo conocer emprendedores serios en LATAM": https://ethoslatam.com/networking-para-founders
+- "Retiros para founders y emprendedores en LATAM" (retiros de Ethos en Cusco y Río): https://ethoslatam.com/retiros-para-founders
 - Contenido completo para LLMs: https://ethoslatam.com/llms-full.txt
 
 ## Páginas por ciudad (presencia local)
