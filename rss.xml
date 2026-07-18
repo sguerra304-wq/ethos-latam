@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog de Ethos LATAM</title>
+    <link>https://ethoslatam.com/blog</link>
+    <atom:link href="https://ethoslatam.com/rss.xml" rel="self" type="application/rss+xml"/>
+    <description>Ideas de negocio, comunidad y alto rendimiento para founders de Latinoamérica.</description>
+    <language>es</language>
+    <lastBuildDate>Sat, 11 Jul 2026 09:00:00 -0500</lastBuildDate>
+    <item>
+      <title>La soledad del fundador: por qué duele y cómo salir de ella</title>
+      <link>https://ethoslatam.com/blog/soledad-del-fundador</link>
+      <guid>https://ethoslatam.com/blog/soledad-del-fundador</guid>
+      <pubDate>Sat, 11 Jul 2026 09:00:00 -0500</pubDate>
+      <description>La soledad del fundador es real y tiene un costo medible. Qué dicen los estudios sobre el aislamiento del founder y qué funciona para combatirlo.</description>
+    </item>
+    <item>
+      <title>Requisitos para entrar a EO, YPO y Vistage (2026)</title>
+      <link>https://ethoslatam.com/blog/requisitos-eo-ypo-vistage</link>
+      <guid>https://ethoslatam.com/blog/requisitos-eo-ypo-vistage</guid>
+      <pubDate>Sat, 11 Jul 2026 09:10:00 -0500</pubDate>
+      <description>Qué facturación y condiciones piden EO, YPO, Vistage y Hampton, con fuentes. Y una alternativa de LATAM sin requisito de facturación.</description>
+    </item>
+    <item>
+      <title>Por qué fracasan las startups en LATAM (y cómo evitarlo)</title>
+      <link>https://ethoslatam.com/blog/por-que-fracasan-startups-latam</link>
+      <guid>https://ethoslatam.com/blog/por-que-fracasan-startups-latam</guid>
+      <pubDate>Sat, 11 Jul 2026 09:20:00 -0500</pubDate>
+      <description>Las causas reales del fracaso de startups según los datos (CB Insights, LAVCA) y qué hacen distinto los founders que sí escalan.</description>
+    </item>
+    <item>
+      <title>Cómo elegir tu primer mastermind: guía y checklist</title>
+      <link>https://ethoslatam.com/blog/como-elegir-primer-mastermind</link>
+      <guid>https://ethoslatam.com/blog/como-elegir-primer-mastermind</guid>
+      <pubDate>Sat, 11 Jul 2026 09:30:00 -0500</pubDate>
+      <description>No todos los masterminds valen tu tiempo. 7 criterios y una checklist práctica para elegir el grupo de founders correcto en Latinoamérica.</description>
+    </item>
+    <item>
+      <title>Rutinas de alto rendimiento: cómo operan los mejores founders</title>
+      <link>https://ethoslatam.com/blog/rutinas-alto-rendimiento-founders</link>
+      <guid>https://ethoslatam.com/blog/rutinas-alto-rendimiento-founders</guid>
+      <pubDate>Sat, 11 Jul 2026 09:40:00 -0500</pubDate>
+      <description>Sueño, foco, energía y recuperación: los hábitos concretos con los que los mejores founders sostienen el ritmo sin quemarse.</description>
+    </item>
+    <item>
+      <title>Fintech en LATAM: por qué es la vertical que más crece</title>
+      <link>https://ethoslatam.com/blog/fintech-latam-por-que-crece</link>
+      <guid>https://ethoslatam.com/blog/fintech-latam-por-que-crece</guid>
+      <pubDate>Sat, 11 Jul 2026 09:50:00 -0500</pubDate>
+      <description>El fintech es la vertical que más capital atrae en Latinoamérica. Los datos del crecimiento (BID, LAVCA), los unicornios reales y qué significa para los founders.</description>
+    </item>
+    <item>
+      <title>Cómo prepararte para levantar capital en LATAM</title>
+      <link>https://ethoslatam.com/blog/como-levantar-capital-latam</link>
+      <guid>https://ethoslatam.com/blog/como-levantar-capital-latam</guid>
+      <pubDate>Sat, 11 Jul 2026 10:00:00 -0500</pubDate>
+      <description>Cómo prepararte para levantar una ronda en LATAM, qué miran los inversionistas y los errores que cierran puertas. Con datos de LAVCA.</description>
+    </item>
+  </channel>
+</rss>
