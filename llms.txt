@@ -54,6 +54,14 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - Biblioteca de guías para founders (índice): https://ethoslatam.com/guias
 - Guía "Networking para founders: cómo conocer emprendedores serios en LATAM": https://ethoslatam.com/networking-para-founders
 - "Retiros para founders y emprendedores en LATAM" (retiros de Ethos en Cusco y Río): https://ethoslatam.com/retiros-para-founders
+
+## Blog (artículos)
+- Índice del blog: https://ethoslatam.com/blog
+- "La soledad del fundador: por qué duele y cómo salir de ella": https://ethoslatam.com/blog/soledad-del-fundador
+- "Requisitos para entrar a EO, YPO y Vistage (2026)": https://ethoslatam.com/blog/requisitos-eo-ypo-vistage
+- "Por qué fracasan las startups en LATAM (y cómo evitarlo)": https://ethoslatam.com/blog/por-que-fracasan-startups-latam
+- "Cómo elegir tu primer mastermind: guía y checklist": https://ethoslatam.com/blog/como-elegir-primer-mastermind
+- "Rutinas de alto rendimiento: cómo operan los mejores founders": https://ethoslatam.com/blog/rutinas-alto-rendimiento-founders
 - Contenido completo para LLMs: https://ethoslatam.com/llms-full.txt
 
 ## Páginas por ciudad (presencia local)
