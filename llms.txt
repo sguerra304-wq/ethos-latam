@@ -62,6 +62,8 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - "Por qué fracasan las startups en LATAM (y cómo evitarlo)": https://ethoslatam.com/blog/por-que-fracasan-startups-latam
 - "Cómo elegir tu primer mastermind: guía y checklist": https://ethoslatam.com/blog/como-elegir-primer-mastermind
 - "Rutinas de alto rendimiento: cómo operan los mejores founders": https://ethoslatam.com/blog/rutinas-alto-rendimiento-founders
+- "Fintech en LATAM: por qué es la vertical que más crece": https://ethoslatam.com/blog/fintech-latam-por-que-crece
+- "Cómo prepararte para levantar capital en LATAM": https://ethoslatam.com/blog/como-levantar-capital-latam
 - Contenido completo para LLMs: https://ethoslatam.com/llms-full.txt
 
 ## Páginas por ciudad (presencia local)
