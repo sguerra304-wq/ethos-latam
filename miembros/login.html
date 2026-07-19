@@ -63,7 +63,11 @@
           </div>
           <div class="field" id="pwField">
             <label for="password">Contraseña</label>
-            <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+            <div style="position:relative">
+              <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" style="padding-right:52px">
+              <button type="button" id="pwToggle" aria-label="Mostrar contraseña" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;color:var(--muted);padding:8px;font-size:13px;font-weight:600">Ver</button>
+            </div>
+            <p id="pwHint" class="muted" style="display:none;font-size:12.5px;margin-top:6px">Mínimo 6 caracteres.</p>
           </div>
 
           <div id="signupExtra" style="display:none">
@@ -131,6 +135,21 @@
       // ya logueado → al panel
       window.EthAuth.getUser().then(function (u) { if (u) location.replace("index.html"); });
 
+      // mostrar/ocultar contraseña
+      $("pwToggle").addEventListener("click", function () {
+        var i = $("password"), show = i.type === "password";
+        i.type = show ? "text" : "password";
+        this.textContent = show ? "Ocultar" : "Ver";
+        this.setAttribute("aria-label", show ? "Ocultar contraseña" : "Mostrar contraseña");
+      });
+      // feedback de longitud en vivo (solo al registrarse)
+      $("password").addEventListener("input", function () {
+        if (mode !== "up") return;
+        var ok = this.value.length >= 6;
+        $("pwHint").textContent = ok ? "✓ Contraseña válida." : "Mínimo 6 caracteres.";
+        $("pwHint").style.color = ok ? "var(--lime-deep,#5a7d0a)" : "";
+      });
+
       function setMode(m) {
         mode = m;
         var up = m === "up";
@@ -141,6 +160,7 @@
         $("nameField").style.display = up ? "block" : "none";
         $("signupExtra").style.display = up ? "block" : "none";
         $("signupNote").style.display = up ? "block" : "none";
+        $("pwHint").style.display = up ? "block" : "none";
         $("authTitle").textContent = up ? "Solicita tu acceso" : "Bienvenido de vuelta";
         $("authSub").textContent = up ? "Ethos LATAM es una comunidad curada. Cuéntanos quién eres." : "Entra para acceder a tu comunidad.";
         $("submitBtn").textContent = up ? "Enviar solicitud y entrar" : "Entrar";
