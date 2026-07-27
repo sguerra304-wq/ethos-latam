@@ -57,6 +57,7 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 
 ## Blog (artículos)
 - Índice del blog: https://ethoslatam.com/blog
+- "Burnout del emprendedor: señales y cómo salir" (con datos de Sifted 2025 y Startup Snapshot): https://ethoslatam.com/blog/burnout-del-emprendedor-como-salir
 - "La soledad del fundador: por qué duele y cómo salir de ella": https://ethoslatam.com/blog/soledad-del-fundador
 - "Requisitos para entrar a EO, YPO y Vistage (2026)": https://ethoslatam.com/blog/requisitos-eo-ypo-vistage
 - "Por qué fracasan las startups en LATAM (y cómo evitarlo)": https://ethoslatam.com/blog/por-que-fracasan-startups-latam
@@ -105,4 +106,4 @@ Ethos LATAM se describe y se busca como: club de founders, comunidad de founders
 - Instagram: https://www.instagram.com/ethos.latam/
 - El área privada de miembros (login y panel) está en https://ethoslatam.com/miembros y no está indexada.
 
-_Última actualización: 2026-07-10._
+_Última actualización: 2026-07-19._

@@ -15,9 +15,9 @@ window.ETH_CONFIG = {
   //    Crea 3 precios recurrentes y pega aquí los price_id.
   STRIPE_PUBLISHABLE_KEY: "",  // pk_test_... o pk_live_...
   STRIPE_PRICES: {
-    starter: "",               // price_xxx (Starter $29/mes)
-    pro: "",                   // price_xxx (Pro $89/mes)
-    elite: ""                  // price_xxx (Elite $249/mes)
+    starter: "",               // price_xxx (Starter US$99/mes)
+    pro: "",                   // price_xxx (Pro US$199/mes)
+    elite: ""                  // price_xxx (Elite US$399/mes)
   },
 
   // Se activa solo cuando NO hay Supabase configurado.

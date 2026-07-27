@@ -1,12 +1,14 @@
 /* =========================================================
-   ETH FOUNDERS — Billing (Stripe real + demo)
+   ETHOS LATAM — Billing. Hoy el cobro real se hace por Mercado Pago desde el
+   panel de admin (ver lib/pagos.mjs); este módulo solo cambia el plan del
+   miembro. Las ramas de Stripe quedan inactivas (DEMO) hasta que se configure.
    ========================================================= */
 (function () {
   const cfg = window.ETH_CONFIG || {};
   const DEMO = cfg.DEMO || !cfg.STRIPE_PUBLISHABLE_KEY;
 
   async function startCheckout(plan) {
-    if (DEMO) { window.EthShell && EthShell.toast("Modo demo: conecta Stripe para cobrar de verdad."); return; }
+    if (DEMO) { window.EthShell && EthShell.toast("Escríbenos y coordinamos el cobro por Mercado Pago."); return; }
     const user = await window.EthAuth.getUser();
     const res = await fetch("/api/checkout", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -21,11 +23,11 @@
     DEMO,
     note() {
       return DEMO
-        ? "El cambio de plan es inmediato. El cobro automático se activará al conectar Stripe."
-        : "Pagos seguros gestionados con Stripe.";
+        ? "El cambio de plan es inmediato. El ajuste del cobro se coordina con el equipo por Mercado Pago."
+        : "Pagos seguros gestionados por la pasarela de pago.";
     },
     changePlan() {
-      const PLANS = [["Starter", "$29/mes", "Comunidad + eventos abiertos + recursos"], ["Pro", "$89/mes", "Todo + masterminds + wellness + networking 1:1"], ["Elite", "$249/mes", "Todo + retiros + inversionistas + concierge"]];
+      const PLANS = [["Starter", "US$99/mes", "Comunidad + eventos abiertos + recursos"], ["Pro", "US$199/mes", "Todo + masterminds + wellness + networking 1:1"], ["Elite", "US$399/mes", "Todo + retiros + inversionistas + concierge"]];
       let modal = document.getElementById("planModal");
       if (!modal) {
         modal = document.createElement("div"); modal.className = "modal"; modal.id = "planModal";
@@ -50,7 +52,7 @@
       });
     },
     async portal() {
-      if (DEMO) { EthShell.toast("Modo demo: el portal de facturación se activa con Stripe."); return; }
+      if (DEMO) { EthShell.toast("Para cambios de facturación, escríbenos a hola@ethoslatam.com."); return; }
       const user = await window.EthAuth.getUser();
       const res = await fetch("/api/portal", {
         method: "POST", headers: { "Content-Type": "application/json" },
