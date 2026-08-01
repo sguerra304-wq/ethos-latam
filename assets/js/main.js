@@ -50,6 +50,21 @@
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
     reveals.forEach((r) => io.observe(r));
+    // Red de seguridad: si por cualquier motivo el observer no dispara
+    // (navegador atípico, dispositivo lento, pestaña en segundo plano), el
+    // contenido NO puede quedar invisible para siempre. A los 2.5s se revela
+    // todo lo que siga oculto. La animación normal ya habrá ocurrido antes.
+    setTimeout(() => {
+      // Si NADA se reveló, el observer no está funcionando: mostrar todo.
+      if (!document.querySelector(".reveal.in")) {
+        document.querySelectorAll(".reveal").forEach((r) => r.classList.add("in"));
+        return;
+      }
+      // Caso normal: rescatar solo lo que ya debería verse.
+      document.querySelectorAll(".reveal:not(.in)").forEach((r) => {
+        if (r.getBoundingClientRect().top < window.innerHeight * 1.5) r.classList.add("in");
+      });
+    }, 2500);
   } else {
     reveals.forEach((r) => r.classList.add("in"));
   }
