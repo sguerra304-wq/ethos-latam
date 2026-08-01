@@ -83,4 +83,19 @@
   };
 
   window.EthAuth = EthAuth;
+
+  /* Skip-link accesible. En el área privada hay <base href="/miembros/">, así que
+     un href="#contenido" resolvería contra la base (y con cleanUrls acabaría
+     recargando la página). Lo resolvemos en JS: enfocamos y desplazamos el
+     contenido sin navegar, que es lo que espera un usuario de teclado. */
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest(".skip-link");
+    if (!a) return;
+    var t = document.getElementById("contenido");
+    if (!t) return;
+    e.preventDefault();
+    if (!t.hasAttribute("tabindex")) t.setAttribute("tabindex", "-1");
+    t.focus();
+    t.scrollIntoView();
+  });
 })();
