@@ -245,8 +245,9 @@
         const list = await EthAdmin.listEvents();
         $("eventsList").innerHTML = list.length ? list.map((e) => `
           <div class="admin-row">
-            <div class="ri"><h4>${esc(e.title)}</h4>
-              <div class="meta"><span>${esc(e.date)}</span><span>·</span><span>${esc(e.type)}</span><span>·</span><span>${esc(e.city)}</span><span>·</span><span>${esc(e.mode)}</span><span>·</span><span>Plan ${esc(e.plan)}+</span></div>
+            <div class="ri"><h4>${esc(e.title)} ${e.full ? '<span class="status-tag rejected">Lleno</span>' : (e.seats && e.remaining != null && e.remaining <= Math.max(2, Math.round(e.seats * 0.2)) ? '<span class="status-tag pending">Casi lleno</span>' : "")}</h4>
+              <div class="meta"><span>${esc(e.date)}</span><span>·</span><span>${esc(e.type)}</span><span>·</span><span>${esc(e.city)}</span><span>·</span><span>${esc(e.mode)}</span><span>·</span><span>Plan ${esc(e.plan)}+</span>${e.seats ? `<span>·</span><span>👥 ${e.taken}/${e.seats} · quedan ${e.remaining}</span>` : ""}${e.waitlistCount ? `<span>·</span><span style="color:var(--violet);font-weight:600">⏳ ${e.waitlistCount} en lista de espera</span>` : ""}</div>
+              ${(e.attendees || []).length ? `<div class="meta" style="margin-top:4px">Confirmados: ${e.attendees.map((a) => esc(a.name)).join(", ")}</div>` : ""}
             </div>
             <div class="ra"><button class="btn-xs" data-edit-ev="${e.id}">Editar</button><button class="btn-xs danger" data-del-ev="${e.id}">Borrar</button></div>
           </div>`).join("") : '<p class="muted">No hay eventos. Crea el primero.</p>';
