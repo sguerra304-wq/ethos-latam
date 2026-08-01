@@ -63,7 +63,10 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
-img { max-width: 100%; display: block; }
+/* height:auto es imprescindible: con los atributos width/height del HTML el
+   navegador calcula el aspect-ratio (evita CLS) y así la imagen escala sin
+   deformarse. Las reglas específicas (.media-frame img, .ev-thumb img) mandan. */
+img { max-width: 100%; height: auto; display: block; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
 ul { list-style: none; }
@@ -477,6 +480,10 @@ h3 { font-size: clamp(1.2rem, 1.8vw, 1.5rem); }
 .page-hero { padding-top: 150px; padding-bottom: 60px; text-align:center; overflow:hidden; width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); padding-inline: 24px; }
 .page-hero::before { content:""; position:absolute; inset:0; background:var(--grad-hero); z-index:-1; }
 .page-hero h1 { margin:20px auto 18px; max-width:16ch; }
+/* Salto al contenido: visible solo al tabular (accesibilidad de teclado) */
+.skip-link { position:absolute; left:-9999px; top:0; z-index:2000; background:var(--violet); color:#fff;
+  padding:12px 22px; border-radius:0 0 10px 0; font-weight:600; font-size:14px; text-decoration:none; }
+.skip-link:focus { left:0; outline:3px solid var(--lime); outline-offset:2px; }
 /* Migas de pan visibles (coinciden con el BreadcrumbList del schema) */
 .crumbs { font-size:13px; color:var(--muted); margin-bottom:14px; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; align-items:center; }
 .crumbs a { color:var(--muted); text-decoration:none; }
